@@ -7,7 +7,7 @@ import requests
 import lxml.html as html
 
 from .search_config import SearchParameters, get_request_headers, get_request_url
-from . import convert
+from .convert import convert_file_to_format
 
 
 class LibgenSearch:
@@ -60,6 +60,9 @@ class LibgenSearch:
                     row.update({header: value})
 
             results[row.pop('id')] = row
+        
+        if download:
+            pass
 
         return json.dumps(results)
 
@@ -89,5 +92,8 @@ class LibgenSearch:
                     row.update({header: value})
 
             results[row.pop('id')] = row
+
+        if download:
+            convert_file_to_format()
 
         return json.dumps(results)
