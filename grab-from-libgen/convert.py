@@ -1,7 +1,7 @@
 from subprocess import Popen
 
 
-def convert_file_to_format(file_to_convert:str , convert_to=None, calibre_path=None) -> str:
+def convert_file_to_format(file_to_convert: str , convert_to=None) -> str:
     if convert_to is None:
         raise ValueError('convert_to must have a value: \'pdf\', \'mobi\', \'epub\'.')
 
