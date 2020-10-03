@@ -4,15 +4,15 @@ from dataclasses import dataclass, asdict
 @dataclass
 class SearchParameters:
     req: str
-    lg_topic: str
-    open: int
-    view: str
-    res: int
-    phrase: int
-    column: str
-    sort: str
-    sortmode: str
-    page: int
+    lg_topic: str = None
+    open: int = None
+    view: str = None
+    res: int = None
+    phrase: int = None
+    column: str = None
+    sort: str = None
+    sortmode: str = None
+    page: int = None
 
 
 def get_request_headers():
@@ -34,6 +34,7 @@ def get_request_url(search_parameters):
     query_string = '?'
 
     for parameter, value in asdict(search_parameters).items():
-        query_string += f'{parameter}={value}&'
+        if value is not None:
+            query_string += f'{parameter}={value}&'
 
     return f'https://libgen.is/search.php{query_string}'

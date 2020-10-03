@@ -7,7 +7,7 @@ from subprocess import Popen
 import requests
 import lxml.html as html
 
-import mirrors
+from mirrors import libgen_lc_scraper, library_lol_scraper, bookfi_net_scraper
 from search_config import SearchParameters, get_request_headers, get_request_url
 from convert import convert_file_to_format
 
@@ -16,14 +16,14 @@ class LibgenSearch:
     url = None
 
     netloc_map = {
-        'library.lol': mirrors.library_lol_scraper,
-        'libgen.lc': mirrors.libgen_lc_scraper,
-        'en.bookfi.net': mirrors.bookfi_net_scraper
+        'library.lol': library_lol_scraper,
+        'libgen.lc': libgen_lc_scraper,
+        'en.bookfi.net': bookfi_net_scraper
     }
 
     def __init__(self, parameters: SearchParameters):
         if self.valid_parameters(parameters):
-            self.url = search_config.get_request_url(parameters)
+            self.url = get_request_url(parameters)
 
     def valid_parameters(self, parameters: SearchParameters) -> bool:
         if len(parameters.req) < 2:
@@ -56,21 +56,22 @@ class LibgenSearch:
         """ Returns a list of search results. """
         results = {}
 
-        resp = requests.get(self.url, headers=search_config.get_request_headers())
+        resp = requests.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise 'The requested URL did not return 200 OK.'
 
-        parsed_content = html.fromstring(resp.content())
+        parsed_content = html.fromstring(resp.content)
         results_table = parsed_content.xpath('/html/body/table[3]')[0]
         
         for tr in results_table.xpath('tr')[1:]:
             row = {}
-            for td in tr.xpath('td'):
-                for header, value in zip(['id', 'author(s)', 'title', 'publisher', 'year', 'pages', 'language', 'size', 'extension', 'mirror1', 'mirror2', 'mirror3', 'mirror4', 'mirror5', 'edit'], td):
-                    if header in ['mirror1', 'mirror2', 'mirror3', 'mirror4', 'mirror5', 'edit'] and list(value.iterlinks()):
-                        value = list(value.iterlinks())[0][2]
-                    
-                    row.update({header: value})
+            for header, value in zip(['id', 'author(s)', 'title', 'publisher', 'year', 'pages', 'language', 'size', 'extension', 'mirror1', 'mirror2', 'mirror3', 'mirror4', 'mirror5', 'edit'], tr.getchildren()):
+                if header in ['mirror1', 'mirror2', 'mirror3', 'mirror4', 'mirror5', 'edit'] and list(value.iterlinks()):
+                    value = list(value.iterlinks())[0][2]
+                else:
+                    value = value.text_content()
+                
+                row.update({header: value})
 
             results[row.pop('id')] = row
 
@@ -79,7 +80,7 @@ class LibgenSearch:
         
         return results
 
-    def first(self, to_json, download=False, save_to=None, convert_to=None) -> str:
+    def first(self, to_json=False, download=False, save_to=None, convert_to=None) -> str:
         """ Returns the first result from the list of search results. """
         if download:
             if convert_to:
@@ -88,11 +89,11 @@ class LibgenSearch:
 
         results = {}
 
-        resp = requests.get(self.url, headers=search_config.get_request_headers())
+        resp = requests.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise 'The requested URL did not return 200 OK.'
 
-        parsed_content = html.fromstring(resp.content())
+        parsed_content = html.fromstring(resp.content)
         results_table = parsed_content.xpath('/html/body/table[3]')[0]
         
         for tr in results_table.xpath('tr')[1:2]:
@@ -134,11 +135,11 @@ class LibgenSearch:
                     
         results = {}
 
-        resp = requests.get(self.url, headers=search_config.get_request_headers())
+        resp = requests.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise 'The requested URL did not return 200 OK.'
 
-        parsed_content = html.fromstring(resp.content())
+        parsed_content = html.fromstring(resp.content)
         results_table = parsed_content.xpath('/html/body/table[3]')[0]
         
         for tr in results_table.xpath('tr')[1:]:
