@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="grab-from-libgen-willeyers", # Replace with your own username
+    name="grab_from_libgen-willeyers", # Replace with your own username
     version="0.1.0",
     author="Will Meyers",
     author_email="will@willmeyers.net",

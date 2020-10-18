@@ -1,18 +1,4 @@
-from dataclasses import dataclass, asdict
-
-
-@dataclass
-class SearchParameters:
-    req: str
-    lg_topic: str = None
-    open: int = None
-    view: str = None
-    res: int = None
-    phrase: int = None
-    column: str = None
-    sort: str = None
-    sortmode: str = None
-    page: int = None
+from dataclasses import asdict
 
 
 def get_request_headers():
@@ -28,9 +14,6 @@ def get_request_headers():
 
 
 def get_request_url(search_parameters):
-    if not isinstance(search_parameters, SearchParameters):
-        raise ValueError('search_parameters must be an instance of SearchParameters.')
-
     query_string = '?'
 
     for parameter, value in asdict(search_parameters).items():
