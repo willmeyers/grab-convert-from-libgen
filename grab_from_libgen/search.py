@@ -57,7 +57,7 @@ class LibgenSearch:
 
         return True
 
-    def grab_file_from_mirror(self, mirror_url: str, save_to: pathlib.Path, convert_to=None) -> str:
+    def _grab_file_from_mirror(self, mirror_url: str, save_to: pathlib.Path, convert_to=None) -> str:
         """ Downloads file from a mirror url. If the given mirror url does not exist, it raises an error.
             Othereise, goes through the motions of downloads, converts, and saves the file to a specified path.
         """
@@ -90,7 +90,7 @@ class LibgenSearch:
 
         for mirror in mirrors:
             try:
-                self.grab_file_from_mirror(mirror, save_to=save_to, convert_to=convert_to)
+                self._grab_file_from_mirror(mirror, save_to=save_to, convert_to=convert_to)
             except LibgenError as err:
                 if mirror == mirrors[-1]:
                     raise err
@@ -149,7 +149,7 @@ class LibgenSearch:
 
         return book
 
-    def get_from_result_list(self, book_id: int, save_to=None, convert_to=None) -> Dict:
+    def get_book_from_results_by_id(self, book_id: int, save_to=None, convert_to=None) -> Dict:
         """ Resutns 
         """
         if save_to:
