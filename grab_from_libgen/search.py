@@ -38,13 +38,20 @@ class LibgenSearch:
         'libgen.lc': libgen_lc_scraper,
     }
 
-    def __init__(self, parameters: SearchParameters):
+    def __init__(self, **parameters):
+        sp = SearchParameters(**parameters)
+
         if self.valid_parameters(parameters):
             self.url = get_request_url(parameters)
 
     def valid_parameters(self, parameters: SearchParameters) -> bool:
         """ Checks if given search parameters are valid. Raises exception if False. Otherwise returns True.
+
+            TODO: enforce types?
         """
+        if not isinstance(parameters.req, str):
+            raise TypeError('Parameter \'req\' must be type str.')
+
         if len(parameters.req) < 2:
             raise LibgenError('Parameter \'req\' must be >= 2 characters.')
 

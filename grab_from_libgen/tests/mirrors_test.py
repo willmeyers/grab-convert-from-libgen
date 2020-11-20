@@ -7,3 +7,7 @@ class TestMirrors(unittest.TestCase):
 
     def test_mirror_scraper(self):
         pass
+
+
+if __name__ == '__main__':
+    unittest.main()
