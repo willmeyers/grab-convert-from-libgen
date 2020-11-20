@@ -19,7 +19,7 @@ def convert_file_to_format(file_to_convert: str, convert_to: str) -> str:
 
     converted_file_filename = f'{file_to_convert_filename}.{convert_to}'
 
-    command = ['ebook-convert', f'"{file_to_convert}"', f'"{converted_file_filename}"']
+    command = ['ebook-convert', file_to_convert, converted_file_filename]
 
     with open('/dev/null', 'w') as sink:
         proc = Popen(command)
