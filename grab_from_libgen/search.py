@@ -41,8 +41,8 @@ class LibgenSearch:
     def __init__(self, **parameters):
         sp = SearchParameters(**parameters)
 
-        if self.valid_parameters(parameters):
-            self.url = get_request_url(parameters)
+        if self.valid_parameters(sp):
+            self.url = get_request_url(sp)
 
     def valid_parameters(self, parameters: SearchParameters) -> bool:
         """ Checks if given search parameters are valid. Raises exception if False. Otherwise returns True.
@@ -97,7 +97,7 @@ class LibgenSearch:
                 else:
                     continue
 
-    def results(self) -> OrderedDict:
+    def get_results(self) -> OrderedDict:
         """ Returns a dictionary of search results.
         """
         results = OrderedDict()
@@ -136,11 +136,11 @@ class LibgenSearch:
                 raise ConversionError(f'Invalid extension \'{convert_to}\' provided. Only pdf, mobi, or epub is allowed.')
 
         if self.results is None:
-            self.results = results
+            self.results = self.get_results()
 
         try:
             first_book_id = list(self.results.keys())[0]
-            book = results[first_book_id]
+            book = self.results[first_book_id]
         except (IndexError, KeyError):
             raise LibgenError('Could not grab any book from results list.')
 
@@ -152,13 +152,13 @@ class LibgenSearch:
     def get_from_result_list(self, book_id: int, save_to=None, convert_to=None) -> Dict:
         """ Resutns 
         """
-        if download:
+        if save_to:
             if convert_to:
                 if convert_to.lower() not in ['pdf', 'mobi', 'epub']:
                     raise ConversionError(f'Invalid extension \'{convert_to}\' provided. Only pdf, mobi, or epub is allowed.')
 
         if self.results is None:
-            self.results = self.results()
+            self.results = self.get_results()
 
         try:
             book = self.results[book_id]

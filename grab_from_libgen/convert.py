@@ -25,4 +25,8 @@ def convert_file_to_format(file_to_convert: str, convert_to: str) -> str:
         proc = Popen(command)
         proc.wait()
 
+        # remove the original file
+        proc = Popen(['rm', file_to_convert])
+        proc.wait()
+
     return converted_file_filename
