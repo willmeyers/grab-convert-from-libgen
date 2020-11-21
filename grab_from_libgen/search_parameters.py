@@ -10,9 +10,6 @@ def get_search_request_url(topic: str, **parameters):
     if topic == 'fiction':
         base_url = 'http://libgen.rs/fiction/'
 
-    if topic == 'comics':
-        base_url = 'https://libgen.lc/comics/index.php'
-
     query_string = '?'
 
     for parameter, value in parameters.items():
@@ -55,7 +52,17 @@ class SciTechSearchParameters(SearchParameters):
 
     @property
     def url(self) -> bool:
-        return get_search_request_url('sci-tech', req=self.q)
+        return get_search_request_url('sci-tech', 
+            req=self.q,
+            sort=self.sort,
+            sortmode=self.sortmode,
+            column=self.column,
+            phrase=self.phrase,
+            rest=self.res,
+            view=self.view,
+            open=self.open,
+            page=self.page
+        )
 
 
 class FictionSearchParameters(SearchParameters):
@@ -73,15 +80,10 @@ class FictionSearchParameters(SearchParameters):
 
     @property
     def url(self) -> str:
-        return get_search_request_url('fiction', q=self.q)
-
-
-class ComicSearchParameters(SearchParameters):
-    q: str
-
-    def are_valid(self) -> bool:
-        return True
-
-    @property
-    def url(self) -> str:
-        return get_search_request_url('comics', q=q)
+        return get_search_request_url('fiction', 
+            q=self.q,
+            criteria=self.criteria,
+            language=self.language,
+            format=self.format,
+            wildcard=self.wildcard
+        )

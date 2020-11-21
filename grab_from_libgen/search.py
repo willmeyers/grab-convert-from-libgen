@@ -7,7 +7,7 @@ import requests
 import lxml.html as html
 
 from . import mirrors
-from .search_parameters import SciTechSearchParameters, FictionSearchParameters, ComicSearchParameters
+from .search_parameters import SciTechSearchParameters, FictionSearchParameters
 from .search_config import get_request_headers
 from .convert import ConversionError, convert_file_to_format
 from .exceptions import LibgenError, InvalidSearchParameter
@@ -22,7 +22,6 @@ class LibgenSearch:
     search_parameter_objects = {
         'sci-tech': SciTechSearchParameters,
         'fiction': FictionSearchParameters,
-        'comics': ComicSearchParameters
     }
 
     mirror_objects = {
@@ -31,7 +30,7 @@ class LibgenSearch:
     }
 
     def __init__(self, topic: str, **parameters):
-        if topic not in ['sci-tech', 'fiction', 'comics']:
+        if topic not in ['sci-tech', 'fiction']:
             raise LibgenError(f'Topic \'{topic}\' is not valid. Valid topics are sci-tech, fiction, or comics')
 
         self.topic = topic
@@ -104,7 +103,7 @@ class LibgenSearch:
         parsed_content = html.fromstring(resp.content)
         results_table = parsed_content.xpath('/html/body/table[3]')[0]
 
-        for tr in results_table.xpath('tr')[1:]:
+        for idx, tr in enumerate(results_table.xpath('tr')[1:]):
             row = {}
             for header, value in zip(
                     ['id', 'author(s)', 'title', 'publisher', 'year', 'pages', 'language', 'size', 'extension',
@@ -117,7 +116,7 @@ class LibgenSearch:
 
                 row.update({header: value})
 
-            results[int(row.pop('id'))] = row
+            results[idx] = row
 
         self.results = results
 
@@ -151,18 +150,12 @@ class LibgenSearch:
 
         return results
 
-    def _get_comic_results(self) -> OrderedDict:
-        results = OrderedDict()
-
     def get_results(self) -> OrderedDict:
         if self.topic == 'sci-tech':
             self.results = self._get_scitech_results()
 
         if self.topic == 'fiction':
             self.results = self._get_fiction_results()
-
-        if self.topic == 'comics':
-            self.results = self._get_comic_results()
 
         return self.results
 
@@ -173,8 +166,8 @@ class LibgenSearch:
             if convert_to:
                 save_to = '.' if save_to is None else save_to
 
-            if convert_to.lower() not in ['pdf', 'mobi', 'epub']:
-                raise ConversionError(f'Invalid extension \'{convert_to}\' provided. Only pdf, mobi, or epub is allowed.')
+                if convert_to.lower() not in ['pdf', 'mobi', 'epub']:
+                    raise ConversionError(f'Invalid extension \'{convert_to}\' provided. Only pdf, mobi, or epub is allowed.')
 
         if self.results is None:
             self.results = self.get_results()
@@ -189,3 +182,26 @@ class LibgenSearch:
             self._save_file(book, save_to, convert_to=convert_to)
 
         return book
+
+    def get(self, save_to: str = None, convert_to: str = None, **filters) -> Dict:
+        if save_to or convert_to:
+            if convert_to:
+                save_to = '.' if save_to is None else save_to
+
+                if convert_to.lower() not in ['pdf', 'mobi', 'epub']:
+                    raise ConversionError(f'Invalid extension \'{convert_to}\' provided. Only pdf, mobi, or epub is allowed.')
+
+        if self.results is None:
+            self.results = self.get_results()
+
+        for key, book in self.results.items():
+            for filter_key in filters.keys():
+                try:
+                    if book[filter_key] == filters[filter_key]:
+                        return book
+                    else:
+                        continue
+                except KeyError:
+                    raise LibgenError(f'Invalid filter. Filter \'{filter_key}\' is not a valid filter.')
+
+        raise LibgenError('No book matches the given filters.')

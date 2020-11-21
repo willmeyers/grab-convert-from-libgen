@@ -25,21 +25,22 @@ The example below shows to grab the first book returned from a search and save i
 ```python
 from grab_from_libgen import LibgenSearch
 
-res = LibgenSearch(req='test')
+res = LibgenSearch('fiction', q='test')
 
 res.first(convert_to='pdf')
 ```
 
+This is an example the gets and downloads a book that matches a given title.
+
+```python
+from grab_from_libgen import LibgenSearch
+
+res = LibgenSearch('fiction', q='test')
+
+res.get(title='', save_to='.')
+```
+
 ## Documentation
-
-#### Search Parameters
-
-This package represents Libgen URL parameters internally as an object `SearchParameters`.
-
-| Parameter | Usage |
-|-----------|-------|
-| req       | The phrase used to search books |
-
 
 #### get_results
 
@@ -54,10 +55,10 @@ in the same order as they would be displayed on libgen itself with the book's id
 
 Returns a the first book (as a dictionary) from the cached or obtained results.
 
+#### get
 
-#### get_book_from_results_by_id
+`get(**filters, save_to: str = None, convert_to: str = None) -> Dict`
 
-`get_book_from_results_by_id(book_id: int, save_to: str = None, convert_to: str = None) -> Dict`
+Returns the first book (as a dictionary) from the cached or obtained results that match the given filter parameters.
 
-Returns a book that matches the given id of a book (as a dictionary) from the cached or obtained results. If no book is found,
-an error is raised.
+The filter parameters must be pulled from the keys that the book dictionary object returns.
