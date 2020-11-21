@@ -20,14 +20,14 @@ pip install grab-from-libgen
 
 ## Quickstart
 
-The example below shows to grab the first book returned from a search and save it as a pdf.
+The example below shows to grab the first book returned from a search and save it to your current working directory as a pdf.
 
 ```python
 from grab_from_libgen import LibgenSearch
 
 res = LibgenSearch(req='test')
 
-res.first(save_to='.', convert_to='pdf')
+res.first(convert_to='pdf')
 ```
 
 ## Documentation
@@ -57,7 +57,7 @@ Returns a the first book (as a dictionary) from the cached or obtained results.
 
 #### get_book_from_results_by_id
 
-`get_book_from_results_by_id(book_id: int, save_to=None, convert_to=None) -> Dict`
+`get_book_from_results_by_id(book_id: int, save_to: str = None, convert_to: str = None) -> Dict`
 
 Returns a book that matches the given id of a book (as a dictionary) from the cached or obtained results. If no book is found,
 an error is raised.

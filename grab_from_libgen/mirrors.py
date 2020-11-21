@@ -1,38 +1,66 @@
 import time
 import re
+import urllib
+from typing import Tuple
+from abc import ABC, abstractmethod
+
 import requests
 import lxml.html as html
 
 
-def get_filename_from_response(repsonse_body) -> str:
-    response_header = repsonse_body.headers.get('content-disposition')
+def get_filename_from_response(repsonse: requests.models.Response) -> str:
+    response_header = repsonse.headers.get('content-disposition')
     filename = re.findall('filename=\"(.+)\"', response_header) if response_header else []
 
     return filename[0] if filename else 'ebook'
 
 
-def library_lol_scraper(response_body) -> tuple:
-    response_body = html.fromstring(response_body.content)
-    download_link = response_body.xpath('//a/@href')[0]
+class LibgenMirror(ABC):
+    netloc: str = None
+    download_link: str = None
+    response: requests.models.Response = None
 
-    file_content = requests.get(download_link, allow_redirects=True)
-    filename = get_filename_from_response(file_content)
+    def __init__(self, url: str):
+        self.url = url
+        self.response = requests.get(self.url)
 
-    if file_content.status_code == 200:
-        return filename, file_content.content
-    else:
-        raise ValueError('Could not resolve download URL.')
+        super().__init__()
+
+    @abstractmethod
+    def scrape_download_link(self) -> str:
+        pass
+
+    def download_file(self) -> Tuple:
+        if self.download_link is None:
+            self.download_link = self.scrape_download_link()
+
+        try:
+            r = requests.get(self.download_link, allow_redirects=True)
+
+            if r.status_code == 200:
+                filename = get_filename_from_response(r)
+                
+                return filename, r.content
+            
+            raise requests.RequestException('Response did not have status code 200')
+
+        except Exception as err:
+            raise Exception(err)
+
+        return None, None
 
 
-def libgen_lc_scraper(response_body: str) -> tuple:
-    filename = get_filename_from_response(response_body)
-    response_body = html.fromstring(response_body.content)
-    download_link = response_body.xpath('//a/@href')[0]
+class LibrarylolMirror(LibgenMirror):
+    def scrape_download_link(self) -> str:
+        tree = html.fromstring(self.response.content)
+        download_link = tree.xpath('//a/@href')[0]
 
-    file_content = requests.get(download_link, allow_redirects=True)
+        return download_link
 
-    if file_content.status_code == 200:
-        return filename, file_content.content
-    else:
-        raise ValueError('Could not resolve download URL.')
 
+class LibgenlcMirror(LibgenMirror):
+    def scrape_download_link(self) -> str:
+        tree = html.fromstring(self.response.content)
+        download_link = tree.xpath('//a/@href')[0]
+
+        return download_link        

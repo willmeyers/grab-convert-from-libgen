@@ -1,13 +1,7 @@
 import os
 from subprocess import Popen
 
-
-class CalibreError(Exception):
-    pass
-
-
-class ConversionError(Exception):
-    pass
+from .exceptions import CalibreError, ConversionError
 
 
 def convert_file_to_format(file_to_convert: str, convert_to: str) -> str:
@@ -18,6 +12,9 @@ def convert_file_to_format(file_to_convert: str, convert_to: str) -> str:
     file_to_convert_filename = '.'.join(file_to_convert.split('.')[:-1])
 
     converted_file_filename = f'{file_to_convert_filename}.{convert_to}'
+
+    if file_to_convert == converted_file_filename:
+        return converted_file_filename
 
     command = ['ebook-convert', file_to_convert, converted_file_filename]
 
