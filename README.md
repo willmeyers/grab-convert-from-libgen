@@ -37,7 +37,7 @@ from grab_from_libgen import LibgenSearch
 
 res = LibgenSearch('fiction', q='test')
 
-res.get(title='', save_to='.')
+res.get(title='a title', save_to='.')
 ```
 
 ## Documentation
@@ -57,7 +57,7 @@ Returns a the first book (as a dictionary) from the cached or obtained results.
 
 #### get
 
-`get(**filters, save_to: str = None, convert_to: str = None) -> Dict`
+`get(save_to: str = None, convert_to: str = None, **filters) -> Dict`
 
 Returns the first book (as a dictionary) from the cached or obtained results that match the given filter parameters.
 

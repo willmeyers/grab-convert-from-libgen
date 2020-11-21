@@ -101,7 +101,11 @@ class LibgenSearch:
             raise LibgenError('The requested URL did not have status code 200.')
 
         parsed_content = html.fromstring(resp.content)
-        results_table = parsed_content.xpath('/html/body/table[3]')[0]
+
+        try:
+            results_table = parsed_content.xpath('/html/body/table[3]')[0]
+        except KeyError:
+            raise LibgenError('No results returned.')
 
         for idx, tr in enumerate(results_table.xpath('tr')[1:]):
             row = {}
@@ -130,7 +134,11 @@ class LibgenSearch:
             raise LibgenError('The requested URL did not have status code 200.')
 
         parsed_content = html.fromstring(resp.content)
-        results_table = parsed_content.xpath('//table')[0]
+
+        try:
+            results_table = parsed_content.xpath('//table')[0]
+        except KeyError:
+            raise LibgenError('No results returned.')
 
         for idx, tr in enumerate(results_table.xpath('//tr')[1:]):
             row = {}
@@ -198,10 +206,14 @@ class LibgenSearch:
             for filter_key in filters.keys():
                 try:
                     if book[filter_key] == filters[filter_key]:
+                        if save_to:
+                            self._save_file(book, save_to, convert_to=convert_to)
+                        
                         return book
+                    
                     else:
                         continue
                 except KeyError:
                     raise LibgenError(f'Invalid filter. Filter \'{filter_key}\' is not a valid filter.')
 
-        raise LibgenError('No book matches the given filters.')
+        raise LibgenError(f'No book matches the given filters.')
