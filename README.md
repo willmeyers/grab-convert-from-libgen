@@ -1,4 +1,4 @@
-# grab-from-libgen
+# grab-convert-from-libgen
 An easy API for searching and downloading books from Libgen.
 
 ## Before Installing
@@ -15,7 +15,7 @@ is the command `ebook-convert` is in your PATH.
 Install by 
 
 ```
-pip install grab-from-libgen
+pip install grab-convert-from-libgen
 ```
 
 ## Quickstart
