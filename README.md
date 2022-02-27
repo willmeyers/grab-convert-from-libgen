@@ -25,7 +25,7 @@ The example below shows to grab the first book returned from a search and save i
 ```python
 from grab_from_libgen import LibgenSearch
 
-res = LibgenSearch('fiction', q='test')
+res = LibgenSearch('sci-tech', q='test')
 
 res.first(convert_to='pdf')
 ```
@@ -40,8 +40,45 @@ res = LibgenSearch('fiction', q='test')
 res.get(title='a title', save_to='.')
 ```
 
+You must specify a `topic` when creating a search instance. Choices are `fiction` or `sci-tech`.
+
 ## Documentation
 
+Only search parameters marked as required are needed when searching.
+
+### Libgen Non-fiction/Sci-tech
+#### Search Parameters
+
+`q`: The search query (required)
+
+`sort`: Sort results. Choices are `def` (default), `id`, `title`, `author`, `publisher`, `year`
+
+`sortmode`: Ascending or decending. Choices are `ASC` or `DESC`
+
+`column`: The column to search against. Choices are `def` (default), `title`, `author`, `publisher`, `year`, `series`, `ISBN`, `Language`, or `md5`.
+
+`phrase`: Search with mask (word*). Choices are `0` or `1`.
+
+`rest`: Results per page. Choices are `25`, `50`, or `100`.
+
+`page`: Page number
+
+### Libgen Fiction
+#### Search Parameters
+
+`q`: The search query (required)
+
+`criteria`: The column to search against. Choices are `title`, `author`, or `series`.
+
+`language`: Language code
+
+`format`: File format
+
+`wildcard`: Wildcarded words (word*). Set to `1`.
+
+`page`: Page number
+
+### LibgenSearch
 #### get_results
 
 `get_results(self) -> OrderedDict`

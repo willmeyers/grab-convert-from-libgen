@@ -3,7 +3,7 @@ class LibgenError(Exception):
 
 
 class InvalidSearchParameter(Exception):
-	pass
+    pass
 
 
 class CalibreError(Exception):
