@@ -68,7 +68,7 @@ Only search parameters marked as required are needed when searching.
 
 `q`: The search query (required)
 
-`criteria`: The column to search against. Choices are `title`, `author`, or `series`.
+`criteria`: The column to search against. Choices are `title`, `authors`, or `series`.
 
 `language`: Language code
 
