@@ -52,7 +52,7 @@ class SciTechSearchParameters(SearchParameters):
         return True
 
     @property
-    def url(self) -> bool:
+    def url(self) -> str:
         return get_search_request_url(
             "sci-tech",
             req=self.q,
@@ -60,7 +60,7 @@ class SciTechSearchParameters(SearchParameters):
             sortmode=self.sortmode,
             column=self.column,
             phrase=self.phrase,
-            rest=self.res,
+            res=self.res,
             view=self.view,
             open=self.open,
             page=self.page,
