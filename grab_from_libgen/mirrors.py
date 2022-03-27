@@ -9,10 +9,10 @@ import lxml.html as html
 
 
 def get_filename_from_response(repsonse: requests.models.Response) -> str:
-    response_header = repsonse.headers.get('content-disposition')
-    filename = re.findall('filename=\"(.+)\"', response_header) if response_header else []
+    response_header = repsonse.headers.get("content-disposition")
+    filename = re.findall('filename="(.+)"', response_header) if response_header else []
 
-    return filename[0] if filename else 'ebook'
+    return filename[0] if filename else "ebook"
 
 
 class LibgenMirror(ABC):
@@ -39,10 +39,10 @@ class LibgenMirror(ABC):
 
             if r.status_code == 200:
                 filename = get_filename_from_response(r)
-                
+
                 return filename, r.content
-            
-            raise requests.RequestException('Response did not have status code 200')
+
+            raise requests.RequestException("Response did not have status code 200")
 
         except Exception as err:
             raise Exception(err)
@@ -53,7 +53,7 @@ class LibgenMirror(ABC):
 class LibrarylolMirror(LibgenMirror):
     def scrape_download_link(self) -> str:
         tree = html.fromstring(self.response.content)
-        download_link = tree.xpath('//a/@href')[0]
+        download_link = tree.xpath("//a/@href")[0]
 
         return download_link
 
@@ -61,6 +61,6 @@ class LibrarylolMirror(LibgenMirror):
 class LibgenlcMirror(LibgenMirror):
     def scrape_download_link(self) -> str:
         tree = html.fromstring(self.response.content)
-        download_link = tree.xpath('//a/@href')[0]
+        download_link = tree.xpath("//a/@href")[0]
 
-        return download_link        
+        return download_link
