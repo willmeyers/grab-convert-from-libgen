@@ -59,7 +59,7 @@ Only search parameters marked as required are needed when searching.
 
 `phrase`: Search with mask (word*). Choices are `0` or `1`.
 
-`rest`: Results per page. Choices are `25`, `50`, or `100`.
+`res`: Results per page. Choices are `25`, `50`, or `100`.
 
 `page`: Page number
 
