@@ -1,4 +1,5 @@
 import pathlib
+import re
 import urllib
 from collections import OrderedDict
 from typing import Dict
@@ -32,7 +33,7 @@ class LibgenSearch:
     def __init__(self, topic: str, **parameters):
         if topic not in ["sci-tech", "fiction"]:
             raise LibgenError(
-                f"Topic '{topic}' is not valid. Valid topics are sci-tech, fiction, or comics"
+                f"Topic '{topic}' is not valid. Valid topics are sci-tech or fiction"
             )
 
         self.topic = topic
@@ -45,7 +46,7 @@ class LibgenSearch:
             raise InvalidSearchParameter("Given search parameters are not valid.")
 
     def _grab_file_from_mirror(
-        self, mirror_url: str, save_to: pathlib.Path, convert_to=None
+            self, mirror_url: str, save_to: pathlib.Path, convert_to=None
     ) -> str:
         """Downloads file from a mirror url. If the given mirror url does not exist, it raises an error.
         Othereise, goes through the motions of downloads, converts, and saves the file to a specified path.
@@ -119,24 +120,24 @@ class LibgenSearch:
         for idx, tr in enumerate(results_table.xpath("tr")[1:]):
             row = {}
             for header, value in zip(
-                [
-                    "id",
-                    "author(s)",
-                    "title",
-                    "publisher",
-                    "year",
-                    "pages",
-                    "language",
-                    "size",
-                    "extension",
-                    "mirror1",
-                    "mirror2",
-                    "mirror3",
-                    "mirror4",
-                    "mirror5",
-                    "edit",
-                ],
-                tr.getchildren(),
+                    [
+                        "id",
+                        "author(s)",
+                        "title",
+                        "publisher",
+                        "year",
+                        "pages",
+                        "language",
+                        "size",
+                        "extension",
+                        "mirror1",
+                        "mirror2",
+                        "mirror3",
+                        "mirror4",
+                        "mirror5",
+                        "edit",
+                    ],
+                    tr.getchildren(),
             ):
                 if header in [
                     "mirror1",
@@ -154,6 +155,9 @@ class LibgenSearch:
 
                 row.update({header: value})
 
+            md5 = re.sub('[\\Wa-z]', "", row["mirror1"])
+            row["md5"] = md5
+            row["topic"] = self.topic
             results[idx] = row
 
         self.results = results
@@ -177,21 +181,21 @@ class LibgenSearch:
         for idx, tr in enumerate(results_table.xpath("//tr")[1:]):
             row = {}
             for header, value in zip(
-                [
-                    "author(s)",
-                    "series",
-                    "title",
-                    "language",
-                    "file",
-                    "mirror1",
-                    "mirror2",
-                    "mirror3",
-                    "edit",
-                ],
-                tr.getchildren(),
+                    [
+                        "author(s)",
+                        "series",
+                        "title",
+                        "language",
+                        "file",
+                        "mirror1",
+                        "mirror2",
+                        "mirror3",
+                        "edit",
+                    ],
+                    tr.getchildren(),
             ):
                 if header in ["mirror1", "mirror2", "mirror3", "edit"] and list(
-                    value.iterlinks()
+                        value.iterlinks()
                 ):
                     value = list(value.iterlinks())[0][2]
                 else:
@@ -201,6 +205,9 @@ class LibgenSearch:
 
                 row.update({header: value})
 
+            md5 = re.sub('[\\Wa-z]', "", row["mirror1"])
+            row["md5"] = md5
+            row["topic"] = self.topic
             results[idx] = row
 
         self.results = results

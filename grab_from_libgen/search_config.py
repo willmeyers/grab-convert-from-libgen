@@ -8,3 +8,9 @@ def get_request_headers():
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1",
     }
+
+
+def get_mirror_sources():
+    # This is used by Metadata.get_metadata() method.
+    mirror_sources = ["GET", "Cloudflare", "IPFS.io", "Infura", "Pinata"]
+    return mirror_sources

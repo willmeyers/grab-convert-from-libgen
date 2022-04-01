@@ -1,13 +1,14 @@
 [tool.poetry]
-name = "grab-convert-from-libgen"
-version = "0.1.0"
-description = ""
-authors = ["Will Meyers <will.meyers@occamsec.com>"]
+name = "grab-from-libgen"
+version = "0.2.0"
+description = "A fork from grab-convert-from-libgen"
+authors = ["Lamarcke <cassiolamarcksilvafreitas@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.27.1"
 lxml = "^4.8.0"
+beautifulsoup4 = "^4.10.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

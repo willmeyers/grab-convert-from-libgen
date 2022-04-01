@@ -12,3 +12,7 @@ class CalibreError(Exception):
 
 class ConversionError(Exception):
     pass
+
+
+class MetadataError(Exception):
+    pass

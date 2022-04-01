@@ -1,6 +1,7 @@
 import unittest
 
 from grab_from_libgen.search import LibgenSearch
+from grab_from_libgen.metadata import Metadata
 
 
 class TestLibgenSearch(unittest.TestCase):
@@ -11,7 +12,7 @@ class TestLibgenSearch(unittest.TestCase):
             "sortmode": "ASC",
             "column": "def",
             "phrase": 0,
-            "rest": "25",
+            "res": "25",
             "page": "1",
         }
 
@@ -20,6 +21,16 @@ class TestLibgenSearch(unittest.TestCase):
         results = search.get_results()
 
         self.assertEqual(len(results), 25)
+
+    def test_metadata(self):
+        search = LibgenSearch("sci-tech", **self.parameters)
+        results = search.get_results()
+        md5 = results[0]["md5"]
+        topic = results[0]["topic"]
+
+        meta = Metadata(md5, topic)
+        self.assertEqual(len(meta.get_metadata()), 2)
+        self.assertTrue(isinstance(meta.get_cover(), str))
 
 
 if __name__ == "__main__":
