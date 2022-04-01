@@ -1,4 +1,4 @@
-# grab-convert-from-libgen
+# grab-fork-from-libgen
 An easy API for searching and downloading books from Libgen.
 
 ## Before Installing
