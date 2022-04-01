@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "grab-from-libgen"
+name = "grab-fork-from-libgen"
 version = "0.2.0"
 description = "A fork from grab-convert-from-libgen"
 authors = ["Lamarcke <cassiolamarcksilvafreitas@gmail.com>"]

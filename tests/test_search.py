@@ -1,7 +1,7 @@
 import unittest
 
-from grab_from_libgen.search import LibgenSearch
-from grab_from_libgen.metadata import Metadata
+from grab_fork_from_libgen.search import LibgenSearch
+from grab_fork_from_libgen.metadata import Metadata
 
 
 class TestLibgenSearch(unittest.TestCase):

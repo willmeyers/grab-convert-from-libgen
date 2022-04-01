@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
-from grab_from_libgen.exceptions import MetadataError
-from grab_from_libgen.search_config import get_request_headers, get_mirror_sources
+from .exceptions import MetadataError
+from .search_config import get_request_headers, get_mirror_sources
 import re
 import requests
 

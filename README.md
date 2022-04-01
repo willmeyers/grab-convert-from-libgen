@@ -17,13 +17,7 @@ If you choose not to do so, you can still use this library for searching on Libr
 Install by 
 
 ```
-pip install grab-convert-from-libgen
-```
-
-or
-
-```
-poetry install
+pip install grab-fork-from-libgen
 ```
 
 ## Fork Overview
@@ -128,7 +122,7 @@ This class holds the methods responsible for metadata scraping.
 
 ####Quickstart:
 ```python
-# First, import the Metadata class from grab_from_libgen.
+# First, import the Metadata class from grab_fork_from_libgen.
 from grab_from_libgen import LibgenSearch, Metadata
 # ...
 search_results = LibgenSearch.get_results()
