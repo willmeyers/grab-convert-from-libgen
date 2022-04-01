@@ -24,7 +24,7 @@ pip install grab-fork-from-libgen
 This forks basically adds three new things to the original project.\
 You can now get a book's cover. (from 3lib or LibraryRocks)\
 You can now get a book's direct download links. (from LibraryLol)\
-You can now get a book's description (if it has one) (also from LibraryLol).\
+You can now get a book's description (if it has one) (also from LibraryLol).
 
 All of these functions need the original file's md5 and topic
 (Which are provided by default for every entry in this version).
@@ -120,7 +120,7 @@ The filter parameters must be pulled from the keys that the book dictionary obje
 ### Metadata
 This class holds the methods responsible for metadata scraping.
 
-####Quickstart:
+#### Quickstart:
 ```python
 # First, import the Metadata class from grab_fork_from_libgen.
 from grab_from_libgen import LibgenSearch, Metadata
