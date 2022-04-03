@@ -1,18 +1,18 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="grab-convert-from-libgen",
-    version="1.0.0",
-    author="Will Meyers",
-    author_email="will@willmeyers.net",
-    description="An easy API for searching and downloading books from Libgen.",
+    name="grab-fork-from-libgen",
+    version="1.3.3",
+    author="Lamarcke",
+    author_email="cassiolamarcksilvafreitas@gmail.com",
+    description="A fork of grab-convert-from-libgen.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="libgen ebooks books api scraper",
-    url="https://github.com/willmeyers/grab-from-libgen",
+    url="https://github.com/Lamarcke/grab-fork-from-libgen",
     packages=setuptools.find_packages(exclude=("tests",)),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -22,6 +22,7 @@ setuptools.setup(
     python_requires='>=3.7',
     install_requires=[
         "requests",
+        "requests-html",
         "lxml"
     ]
 )

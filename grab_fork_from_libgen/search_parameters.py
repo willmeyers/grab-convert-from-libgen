@@ -42,8 +42,8 @@ class SciTechSearchParameters(SearchParameters):
         self.sort: str = self.parameters.get("sort")
         self.sortmode: str = self.parameters.get("sortmode")
         self.column: str = self.parameters.get("column")
-        self.phrase: str = self.parameters.get("phrase")
-        self.res: str = self.parameters.get("res")
+        self.phrase: int = self.parameters.get("phrase")
+        self.res: int = self.parameters.get("res")
         self.view: str = self.parameters.get("view")
         self.open: str = self.parameters.get("open")
         self.page: int = self.parameters.get("page")
@@ -76,6 +76,7 @@ class FictionSearchParameters(SearchParameters):
         self.language: str = self.parameters.get("language")
         self.format: str = self.parameters.get("format")
         self.wildcard: str = self.parameters.get("wildcard")
+        self.page: int = self.parameters.get("page")
 
     def are_valid(self) -> bool:
         return True
@@ -89,4 +90,5 @@ class FictionSearchParameters(SearchParameters):
             language=self.language,
             format=self.format,
             wildcard=self.wildcard,
+            page=self.page,
         )

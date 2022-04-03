@@ -3,8 +3,11 @@ import re
 import urllib
 from collections import OrderedDict
 from typing import Dict
+from bs4 import BeautifulSoup
 
-import requests
+# Removed import requests library statement.
+# Imports requests-html instead.
+from requests_html import HTMLSession
 import lxml.html as html
 
 from . import mirrors
@@ -102,18 +105,18 @@ class LibgenSearch:
                 else:
                     continue
 
-    def _get_scitech_results(self) -> OrderedDict:
+    def _get_scitech_results(self, pagination: bool) -> OrderedDict | Dict:
         """Returns a dictionary of search results."""
         results = OrderedDict()
+        session = HTMLSession()
 
-        resp = requests.get(self.url, headers=get_request_headers())
+        resp = session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
-
-        parsed_content = html.fromstring(resp.content)
+        html_tree = html.fromstring(resp.content)
 
         try:
-            results_table = parsed_content.xpath("/html/body/table[3]")[0]
+            results_table = html_tree.xpath("/html/body/table[3]")[0]
         except KeyError:
             raise LibgenError("No results returned.")
 
@@ -154,27 +157,69 @@ class LibgenSearch:
                     )
 
                 row.update({header: value})
-
-            md5 = re.sub('[\\Wa-z]', "", row["mirror1"])
+            mirror1 = row.get("mirror1")
+            md5 = re.sub('[\\Wa-z]', "", mirror1)
             row["md5"] = md5
             row["topic"] = self.topic
             results[idx] = row
+
+        if pagination:
+            has_next_page: bool = False
+
+            resp.html.render()
+            try:
+                soup = BeautifulSoup(resp.html.raw_html, "lxml")
+                paginator = soup.find("div", {"id": "paginator_example_bottom"})
+                paginator_list = paginator.select("table > tbody > tr > td")
+                # The total amount of pages avaiable.
+                # One page equals to 1, and so on.
+                total_pages = len(paginator_list)
+
+            except KeyError:
+                total_pages = None
+
+            try:
+                # Converts to int because the user may provide str or int as page.
+                current_page: int = int(self.search_parameters.page)
+            except (KeyError, AttributeError):
+                # If no page is found (meaning the user didn't provide one)
+                current_page = 1
+
+            # Sets has_next_page to True if current page is less or equal to total pages.
+            if total_pages is not None:
+                has_next_page = True if current_page <= total_pages else False
+
+            pagination_data = {
+                "total_pages": total_pages,
+                "has_next_page": has_next_page
+            }
+
+            # Weird naming to avoid messing too much with people's code.
+            results_data = {
+                "pagination": pagination_data,
+                "results": results
+            }
+
+            self.results = results_data
+
+            return results_data
 
         self.results = results
 
         return results
 
-    def _get_fiction_results(self) -> OrderedDict:
+    def _get_fiction_results(self, pagination: bool) -> OrderedDict | Dict:
         results = OrderedDict()
+        session = HTMLSession()
 
-        resp = requests.get(self.url, headers=get_request_headers())
+        resp = session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
 
-        parsed_content = html.fromstring(resp.content)
+        html_tree = html.fromstring(resp.content)
 
         try:
-            results_table = parsed_content.xpath("//table")[0]
+            results_table = html_tree.xpath("//table")[0]
         except KeyError:
             raise LibgenError("No results returned.")
 
@@ -205,21 +250,68 @@ class LibgenSearch:
 
                 row.update({header: value})
 
-            md5 = re.sub('[\\Wa-z]', "", row["mirror1"])
-            row["md5"] = md5
+            mirror1 = row.get("mirror1")
+            md5 = re.sub('[\\Wa-z]', "", mirror1)
             row["topic"] = self.topic
             results[idx] = row
+
+        if pagination:
+            has_next_page: bool = False
+
+            resp.html.render()
+            try:
+                soup = BeautifulSoup(resp.html.raw_html, "lxml")
+                # Selects the third select element on the page, which is the pagination one.
+                # Then selects all the options inside it.
+                paginator = soup.select("select")[3]
+                paginator_list = paginator.select("option")
+                # The total amount of pages avaiable.
+                # One page equals to 1, and so on.
+                total_pages: int | None = len(paginator_list)
+
+            except KeyError:
+                total_pages = None
+
+            try:
+                current_page: int = int(self.search_parameters.page)
+            except (KeyError, AttributeError):
+                # If no page is found (meaning the user didn't provide one)
+                current_page: int = 1
+
+            # Sets has_next_page to True if current page is less or equal to total pages.
+            # Sets has_next_page to True if current page is less or equal to total pages.
+            if total_pages is not None:
+                has_next_page = True if current_page <= total_pages else False
+
+            pagination = {
+                "total_pages": total_pages,
+                "has_next_page": has_next_page
+            }
+
+            # Weird naming to avoid messing too much with people's code.
+            results_data = {
+                "pagination": pagination,
+                "data": results
+            }
+
+            self.results = results_data
+
+            return results_data
 
         self.results = results
 
         return results
 
-    def get_results(self) -> OrderedDict:
+    def get_results(self, pagination: bool = False) -> OrderedDict | Dict:
+        # Returns both values, but only caches one.
+        # This is to avoid messing with other functions such as first() and get().
+        # Coding in compliance with someone's code is funny
+
         if self.topic == "sci-tech":
-            self.results = self._get_scitech_results()
+            self.results = self._get_scitech_results(pagination)
 
         if self.topic == "fiction":
-            self.results = self._get_fiction_results()
+            self.results = self._get_fiction_results(pagination)
 
         return self.results
 
@@ -237,6 +329,9 @@ class LibgenSearch:
         if self.results is None:
             self.results = self.get_results()
 
+        # If self.results is a dict (meaning pagination was set to true when calling get_results() )
+        if isinstance(self.results, dict):
+            self.results = self.results.get("results")
         try:
             first_book_id = list(self.results.keys())[0]
             book = self.results[first_book_id]
@@ -260,6 +355,10 @@ class LibgenSearch:
 
         if self.results is None:
             self.results = self.get_results()
+
+        # If self.results is a dict (meaning pagination was set to true when calling get_results() )
+        if isinstance(self.results, dict):
+            self.results = self.results.get("results")
 
         for _, book in self.results.items():
             for filter_key in filters.keys():

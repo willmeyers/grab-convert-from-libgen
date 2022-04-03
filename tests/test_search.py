@@ -22,6 +22,12 @@ class TestLibgenSearch(unittest.TestCase):
 
         self.assertEqual(len(results), 25)
 
+    def test_pagination(self):
+        search = LibgenSearch("sci-tech", **self.parameters)
+        results = search.get_results(True)
+
+        self.assertTrue(isinstance(results, dict))
+
     def test_metadata(self):
         search = LibgenSearch("sci-tech", **self.parameters)
         results = search.get_results()

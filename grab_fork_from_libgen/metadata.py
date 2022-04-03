@@ -88,6 +88,7 @@ class Metadata:
         return cover_url
 
     def get_metadata(self) -> tuple:
+        topic_url = None
         # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
         # This method raises an error if a download link is not found. But no error is a description is not.
         # This is because while most files do have a d_link, a lot don't have a description.
@@ -96,6 +97,8 @@ class Metadata:
             topic_url = "/main/"
         elif self.topic == "fiction":
             topic_url = "/fiction/"
+        else:
+            raise MetadataError("Topic is not valid.")
 
         url = self.liblol_base + topic_url + self.md5
 
