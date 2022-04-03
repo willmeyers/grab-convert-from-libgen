@@ -1,6 +1,6 @@
 import unittest
 
-from grab_from_libgen.search import LibgenSearch
+from grab_convert_from_libgen.search import LibgenSearch
 
 
 class TestLibgenSearch(unittest.TestCase):
