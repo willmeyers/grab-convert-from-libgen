@@ -132,8 +132,7 @@ results = {
     ...
 }
 ```
-If the user sets pagination to **False** or doesn't provide any value, this ordinary
-dict is the only result returned.
+If the user sets pagination to **False** or doesn't provide any value, this OrderedDict is the only result returned.
 
 You can easily convert this dict to an ordinary dict instead:
 ```
