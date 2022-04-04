@@ -181,7 +181,7 @@ class LibgenSearch:
             try:
                 # Converts to int because the user may provide str or int as page.
                 current_page: int = int(self.search_parameters.page)
-            except (KeyError, AttributeError):
+            except TypeError:
                 # If no page is found (meaning the user didn't provide one)
                 current_page = 1
 
@@ -262,19 +262,19 @@ class LibgenSearch:
             try:
                 soup = BeautifulSoup(resp.html.raw_html, "lxml")
                 # Selects the third select element on the page, which is the pagination one.
-                # Then selects all the options inside it.
                 paginator = soup.select("select")[3]
+                # Then selects all the options inside it.
                 paginator_list = paginator.select("option")
                 # The total amount of pages avaiable.
                 # One page equals to 1, and so on.
                 total_pages: int | None = len(paginator_list)
 
-            except KeyError:
+            except (KeyError, IndexError):
                 total_pages = None
 
             try:
                 current_page: int = int(self.search_parameters.page)
-            except (KeyError, AttributeError):
+            except TypeError:
                 # If no page is found (meaning the user didn't provide one)
                 current_page: int = 1
 
