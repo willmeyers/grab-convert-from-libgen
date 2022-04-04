@@ -132,8 +132,7 @@ results = {
     ...
 }
 ```
-If the user sets pagination to **False** or doesn't provide any value, this ordinary
-dict is the only result returned.
+If the user sets pagination to **False** or doesn't provide any value, this OrderedDict is the only result returned.
 
 You can easily convert this dict to an ordinary dict instead:
 ```
@@ -144,6 +143,10 @@ This will remove the index numbers before each book info.
 
 Results are ordered in the same order as they would be displayed on libgen itself with the book's id serving as the key.
 
+**Notice**: Using pagination will download Chrominium to your home folder on your first run. e.g.: "~/.pyppeteer/".
+This only happens once. This happens because LibraryGenesis pagination uses javascript, which is not rendedered by default in the HTML.
+
+It's important to pay attention to this if you use services (like Heroku Free Tier) with limited storage space.
 
 
 #### first
@@ -158,11 +161,6 @@ Returns the first book (as a dictionary) from the cached or obtained results.
 
 Returns the first book (as a dictionary) from the cached or obtained results that match the given filter parameters.
 
-The filter parameters must be pulled from the keys that the book dictionary object returns.
-For example:
-```python
-
-```
 
 ### Metadata
 This class holds the methods responsible for metadata scraping.
@@ -214,7 +212,7 @@ If they take too long, your code will hang.
 "No Cover" image used in LibraryRocks.
 
 `get_metadata` returns a `tuple`, the first value being a `dict` of all the direct download links of the file, and the
-second value being the file's description.\ 
+second value being the file's description.   
 
 Throws if no download link is found.
 If no description is found, returns `None` on the second value instead.
