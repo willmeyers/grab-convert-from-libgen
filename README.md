@@ -134,10 +134,16 @@ results = {
 ```
 If the user sets pagination to **False** or doesn't provide any value, this OrderedDict is the only result returned.
 
-You can easily convert this dict to an ordinary dict instead:
+This is how you get each value in your variables:
 ```
-results = OrderedDict()
-results = dict(results)
+my_search = LibgenSearch.get_results(pagination=True)
+
+pagination_info = my_search["pagination"] # Dict
+results = my_search["results"] # OrderedDict
+
+# You can then covert the results to a dict
+# This will remove the index numbers before each book info.
+results = dict(results) # Dict
 ```
 This will remove the index numbers before each book info.
 
@@ -154,12 +160,16 @@ It's important to pay attention to this if you use services (like Heroku Free Ti
 `first(save_to: str = None, convert_to: str = None) -> Dict`
 
 Returns the first book (as a dictionary) from the cached or obtained results.
+You can provide a `save_to: str` value if you want to download the book.
+And you can convert it using `convert_to: str`. Only `pdf`, `epub` and `mobi` are allowed. 
 
 #### get
 
 `get(save_to: str = None, convert_to: str = None, **filters) -> Dict`
 
 Returns the first book (as a dictionary) from the cached or obtained results that match the given filter parameters.
+You can provide a `save_to: str` value if you want to download the book.
+And you can convert it using `convert_to: str`. Only `pdf`, `epub` and `mobi` are allowed.
 
 
 ### Metadata
@@ -191,7 +201,7 @@ cover = meta.get_cover()
 d_links_and_desc = meta.get_metadata()
 
 ```
-### Metadata
+#### Metadata - Class
 The `Metadata` class takes three arguments, one being optional:\
 
 `md5` = An `string`, a code used to identify the file on LibraryGenesis and others databases.
