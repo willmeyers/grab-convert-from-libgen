@@ -7,17 +7,18 @@ from bs4 import BeautifulSoup
 
 # Removed import requests library statement.
 # Imports requests-html instead.
-from requests_html import HTMLSession
+from requests_html import AsyncHTMLSession
+import aiofiles
 import lxml.html as html
 
-from . import mirrors
+from . import aio_mirrors as mirrors
 from .search_parameters import SciTechSearchParameters, FictionSearchParameters
 from .search_config import get_request_headers
 from .convert import ConversionError, convert_file_to_format
 from .exceptions import LibgenError, InvalidSearchParameter
 
 
-class LibgenSearch:
+class AIOLibgenSearch:
     base_url = None
     url = None
 
@@ -48,17 +49,15 @@ class LibgenSearch:
         else:
             raise InvalidSearchParameter("Given search parameters are not valid.")
 
-    def _grab_file_from_mirror(
-            self, mirror_url: str, save_to: pathlib.Path, convert_to=None
-    ) -> str:
+    async def _grab_file_from_mirror(self, mirror_url: str, save_to: pathlib.Path, convert_to=None) -> str:
         """Downloads file from a mirror url. If the given mirror url does not exist, it raises an error.
-        Othereise, goes through the motions of downloads, converts, and saves the file to a specified path.
+        Otherwise, goes through the motions of downloads, converts, and saves the file to a specified path.
         """
         netloc = urllib.parse.urlparse(mirror_url).netloc
 
         try:
             mirror = self.mirror_objects[netloc](mirror_url)
-            filename, file_content = mirror.download_file()
+            filename, file_content = await mirror.download_file()
 
         except KeyError:
             raise KeyError("The given mirror URL does not match any current scrapers.")
@@ -68,8 +67,8 @@ class LibgenSearch:
                 f"Could not download file from url {mirror_url}. This may be an internal issue"
             )
 
-        with open(filename, "wb+") as fo:
-            fo.write(file_content)
+        async with aiofiles.open(filename, "wb+") as fo:
+            await fo.write(file_content)
 
         if convert_to:
             if convert_to.lower() not in {"pdf", "epub", "mobi"}:
@@ -81,9 +80,9 @@ class LibgenSearch:
 
         return filename
 
-    def _save_file(self, book: Dict, save_to: str, convert_to: str = None) -> None:
-        """Given a book with list of mirror urls, run through all mirror urls until a valid response is
-        returned. Executes `grab_file_from_mirror`.
+    async def _save_file(self, book: Dict, save_to: str, convert_to: str = None) -> None:
+        """Given a book with list of mirror urls, run through all mirror urls until a valid response is returned.
+        Executes `grab_file_from_mirror`.
         """
         save_to = pathlib.Path(save_to)
         mirror_links = None
@@ -99,9 +98,7 @@ class LibgenSearch:
         for mirror in mirror_links:
             try:
                 if not finished:
-                    completed = self._grab_file_from_mirror(
-                        mirror, save_to=save_to, convert_to=convert_to
-                    )
+                    completed = await self._grab_file_from_mirror(mirror, save_to=save_to, convert_to=convert_to)
                     if completed:
                         finished = True
 
@@ -111,12 +108,12 @@ class LibgenSearch:
                 else:
                     continue
 
-    def _get_scitech_results(self, pagination: bool) -> OrderedDict | Dict:
+    async def _get_scitech_results(self, pagination: bool) -> OrderedDict | Dict:
         """Returns a dictionary of search results."""
         results = OrderedDict()
-        session = HTMLSession()
+        session = AsyncHTMLSession()
 
-        resp = session.get(self.url, headers=get_request_headers())
+        resp = await session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
         html_tree = html.fromstring(resp.content)
@@ -172,12 +169,12 @@ class LibgenSearch:
         if pagination:
             has_next_page: bool = False
 
-            resp.html.render()
+            await resp.html.arender()
             try:
                 soup = BeautifulSoup(resp.html.raw_html, "lxml")
                 paginator = soup.find("div", {"id": "paginator_example_bottom"})
                 paginator_list = paginator.select("table > tbody > tr > td")
-                # The total amount of pages avaiable.
+                # The total amount of pages available.
                 # One page equals to 1, and so on.
                 total_pages = len(paginator_list)
 
@@ -215,11 +212,11 @@ class LibgenSearch:
 
         return results
 
-    def _get_fiction_results(self, pagination: bool) -> OrderedDict | Dict:
+    async def _get_fiction_results(self, pagination: bool) -> OrderedDict | Dict:
         results = OrderedDict()
-        session = HTMLSession()
+        session = AsyncHTMLSession()
 
-        resp = session.get(self.url, headers=get_request_headers())
+        resp = await session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
 
@@ -261,8 +258,6 @@ class LibgenSearch:
             md5 = re.sub('[\\Wa-z]', "", mirror1)
             row["md5"] = md5
             row["topic"] = self.topic
-            # This changes \xa0 to a whitespace character.
-            row["file"] = re.sub("\xa0", " ", row.get("file"))
 
             file_info = row.get("file")
             extension = re.findall(".*/", file_info)[0]
@@ -277,15 +272,15 @@ class LibgenSearch:
         if pagination:
             has_next_page: bool = False
 
-            # This renders the page and enables javascript-based content
-            resp.html.render()
+            # This asynchronously renders the page and enables javascript-based content
+            await resp.html.arender()
             try:
                 soup = BeautifulSoup(resp.html.raw_html, "lxml")
                 # Selects the third select element on the page, which is the pagination one.
                 paginator = soup.select("select")[3]
                 # Then selects all the options inside it.
                 paginator_list = paginator.select("option")
-                # The total amount of pages avaiable.
+                # The total amount of pages available.
                 # One page equals to 1, and so on.
                 total_pages: int | None = len(paginator_list)
 
@@ -323,20 +318,20 @@ class LibgenSearch:
 
         return results
 
-    def get_results(self, pagination: bool = False) -> OrderedDict | Dict:
+    async def get_results(self, pagination: bool = False) -> OrderedDict | Dict:
         # Returns both values, but only caches one.
         # This is to avoid messing with other functions such as first() and get().
         # Coding in compliance with someone's code is funny
 
         if self.topic == "sci-tech":
-            self.results = self._get_scitech_results(pagination)
+            self.results = await self._get_scitech_results(pagination)
 
         if self.topic == "fiction":
-            self.results = self._get_fiction_results(pagination)
+            self.results = await self._get_fiction_results(pagination)
 
         return self.results
 
-    def first(self, save_to: str = None, convert_to: str = None) -> Dict:
+    async def first(self, save_to: str = None, convert_to: str = None) -> Dict:
         """Returns the first result from the list of search results."""
         if save_to or convert_to:
             if convert_to:
@@ -348,13 +343,12 @@ class LibgenSearch:
                     )
 
         if self.results is None:
-            self.results = self.get_results()
+            self.results = await self.get_results()
 
         this_results: OrderedDict | Dict = self.results
-
-        # If this_results is a dict (meaning pagination was set to true when calling get_results() )
+        # If self.results is a dict (meaning pagination was set to true when calling get_results() )
         if type(this_results) == dict:
-            this_results = this_results.get("data")
+            this_results = this_results.get("results")
 
         try:
             first_book_id = list(this_results.keys())[0]
@@ -363,12 +357,11 @@ class LibgenSearch:
             raise LibgenError("Could not grab any book from results list.")
 
         if save_to:
-            self._save_file(book, save_to, convert_to=convert_to)
+            await self._save_file(book, save_to, convert_to=convert_to)
 
         return book
 
-    def get(self, save_to: str = None, convert_to: str = None, **filters) -> Dict:
-        # Returns a result from a list of filters.
+    async def get(self, save_to: str = None, convert_to: str = None, **filters) -> Dict:
         if save_to or convert_to:
             if convert_to:
                 save_to = "." if save_to is None else save_to
@@ -379,18 +372,19 @@ class LibgenSearch:
                     )
 
         if self.results is None:
-            self.results = self.get_results()
+            self.results = await self.get_results()
+
         this_results: OrderedDict | Dict = self.results
         # If self.results is a dict (meaning pagination was set to true when calling get_results() )
         if type(this_results) == dict:
-            this_results = this_results.get("data")
+            this_results = this_results.get("results")
 
         for book in this_results.values():
             for filter_key in filters.keys():
                 try:
                     if book[filter_key] == filters[filter_key]:
                         if save_to:
-                            self._save_file(book, save_to, convert_to=convert_to)
+                            await self._save_file(book, save_to, convert_to=convert_to)
 
                         return book
 
@@ -401,16 +395,14 @@ class LibgenSearch:
                         f"Invalid filter. Filter '{filter_key}' is not a valid filter."
                     )
 
-        raise LibgenError("No book matches the given filters.")
+        raise LibgenError(f"No book matches the given filters.")
 
-    def get_all(self, **filters) -> Dict:
+    async def get_all(self, **filters) -> Dict:
         filtered_results = {}
 
         if self.results is None:
             self.results = self.get_results()
-
-        this_results: OrderedDict | Dict = self.results
-
+        this_results = self.results
         if type(this_results) == dict:
             this_results = this_results.get("data")
 

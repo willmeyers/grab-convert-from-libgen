@@ -3,10 +3,10 @@ from .exceptions import MetadataError
 from .search_config import get_request_headers, get_mirror_sources
 import re
 from requests import exceptions
-from requests_html import HTMLSession
+from requests_html import AsyncHTMLSession
 
 
-class Metadata:
+class AIOMetadata:
     def __init__(self, md5: str, topic: str, timeout: int | tuple | None = None):
         # No method here is rate-limited, use it with caution!
         # You will get blocked for abusing this.
@@ -33,8 +33,8 @@ class Metadata:
         self.librocks_base = "https://libgen.rocks/ads.php?md5="
         self._3lib_base = "https://3lib.net/md5/"
 
-    def get_cover(self) -> str:
-        session = HTMLSession()
+    async def get_cover(self) -> str:
+        session = AsyncHTMLSession()
 
         # Instead of raising an error if no cover is found (and if the request was suceeded), a "no cover" image link is
         # sent instead. It uses HTTP and no CORS. So it's usable in most websites.
@@ -45,19 +45,19 @@ class Metadata:
 
         # This function will try for both 3lib and libraryrocks.
         try:
-            page = session.get(_3lib, headers=get_request_headers(), timeout=self.timeout)
+            page = await session.get(_3lib, headers=get_request_headers(), timeout=self.timeout)
             # If 3lib is up.
             _3libup = True
 
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError):
+            _3libup = False
             try:
-                page = session.get(librocks, headers=get_request_headers(), timeout=self.timeout)
+                page = await session.get(librocks, headers=get_request_headers(), timeout=self.timeout)
 
             except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
                 raise MetadataError("Both 3lib and LibraryRocks failed to connect. The last error was: ", err)
-
             # If 3lib is down.
-            _3libup = False
+
 
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
 
@@ -72,7 +72,7 @@ class Metadata:
                 try:
                     cover_url = re.sub("covers100", "covers200", cover["data-src"])
                 except KeyError:
-                    cover_url = "https://libgen.rocks/img/blank.png"
+                    raise MetadataError("Could not find cover for this specific md5.")
 
             if cover_url == "/img/cover-not-exists.png":
                 # This image doesn't actually render,
@@ -89,10 +89,9 @@ class Metadata:
 
         return cover_url
 
-    def get_metadata(self) -> tuple:
-        session = HTMLSession()
+    async def get_metadata(self) -> tuple:
+        session = AsyncHTMLSession()
         topic_url = None
-
         # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
         # This method raises an error if a download link is not found. But no error is a description is not.
         # This is because while most files do have a d_link, a lot don't have a description.
@@ -111,10 +110,10 @@ class Metadata:
         # Ideally, this should only be done once the users actually wants to download a book.
 
         try:
-            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page = await session.get(url, headers=get_request_headers(), timeout=self.timeout)
             page.raise_for_status()
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
-            raise MetadataError("Error while connecting to Librarylol: ", err)
+            raise MetadataError("Error while connecting to the download provider: ", err)
 
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
         links = soup.find_all("a", string=get_mirror_sources())
