@@ -5,7 +5,7 @@ from .exceptions import CalibreError, ConversionError
 
 
 def convert_file_to_format(file_to_convert: str, convert_to: str) -> str:
-    if convert_to.lower() not in {"pdf", "mobi", "epub"}:
+    if convert_to.lower() not in ["pdf", "mobi", "epub"]:
         raise ConversionError("convert_to must have a value: 'pdf', 'mobi', 'epub'.")
 
     convert_to = convert_to.lower()

@@ -188,9 +188,9 @@ class AIOLibgenSearch:
                 # If no page is found (meaning the user didn't provide one)
                 current_page = 1
 
-            # Sets has_next_page to True if current page is less or equal to total pages.
+            # Sets has_next_page to True if current page is less than total pages.
             if total_pages is not None:
-                has_next_page = True if current_page <= total_pages else False
+                has_next_page = True if current_page < total_pages else False
 
             pagination_data = {
                 "current_page": current_page,
@@ -293,10 +293,9 @@ class AIOLibgenSearch:
                 # If no page is found (meaning the user didn't provide one)
                 current_page: int = 1
 
-            # Sets has_next_page to True if current page is less or equal to total pages.
-            # Sets has_next_page to True if current page is less or equal to total pages.
+            # Sets has_next_page to True if current page is less than total pages.
             if total_pages is not None:
-                has_next_page = True if current_page <= total_pages else False
+                has_next_page = True if current_page < total_pages else False
 
             pagination = {
                 "current_page": current_page,

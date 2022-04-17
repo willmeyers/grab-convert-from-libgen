@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "grab-fork-from-libgen"
-version = "1.8.0"
-description = "A fork from grab-convert-from-libgen"
+version = "1.8.2"
+description = "A fork of grab-convert-from-libgen"
 readme = "README.md"
 keywords=["libgen", "ebooks", "books", "api", "scraper"]
 authors = ["Lamarcke <cassiolamarcksilvafreitas@gmail.com>"]
