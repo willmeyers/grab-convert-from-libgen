@@ -122,6 +122,8 @@ class AIOLibgenSearch:
             results_table = html_tree.xpath("/html/body/table[3]")[0]
         except KeyError:
             raise LibgenError("No results returned.")
+        except IndexError:
+            raise LibgenError("No results returned, this may be an parameter issue.")
 
         for idx, tr in enumerate(results_table.xpath("tr")[1:]):
             row = {}
@@ -226,6 +228,8 @@ class AIOLibgenSearch:
             results_table = html_tree.xpath("//table")[0]
         except KeyError:
             raise LibgenError("No results returned.")
+        except IndexError:
+            raise LibgenError("No results returned, this may be an parameter issue.")
 
         for idx, tr in enumerate(results_table.xpath("//tr")[1:]):
             row = {}
@@ -410,7 +414,7 @@ class AIOLibgenSearch:
             for filter_key, filter_value in filters.items():
                 try:
                     # Checks if the current filter exists and equals to the value inside a book's dict.
-                    if book.get(f"{filter_key}") == filter_value:
+                    if book[filter_key] == filter_value:
                         # This runs if a filter matches, meaning that, for now at least, it match **all** the filters.
                         meets_criteria = True
                         continue
