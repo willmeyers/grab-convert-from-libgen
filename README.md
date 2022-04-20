@@ -303,9 +303,11 @@ It's good practice to always provide a timeout value. As both the cover and down
 slow at any given moment.\
 If they take too long, your code will hang.
 
+You can expect a `MetadataError` if something goes wrong.
+
 #### Metadata - Methods
 `get_cover` returns an `string`, which is the direct link to that file's cover image. If no cover is found, returns a
-"No Cover" image used in LibraryRocks.
+`MetadataError`.
 
 `get_metadata` returns a `tuple`, the first value being a `dict` of all the direct download links of the file, and the
 second value being the file's description.   

@@ -35,9 +35,6 @@ class Metadata:
 
     def get_cover(self) -> str:
         session = HTMLSession()
-
-        # Instead of raising an error if no cover is found (and if the request was suceeded), a "no cover" image link is
-        # sent instead. It uses HTTP and no CORS. So it's usable in most websites.
         # Both 3lib and LibraryRocks doesn't use CORS in their cover images.
 
         _3lib = self._3lib_base + self.md5
@@ -50,14 +47,13 @@ class Metadata:
             _3libup = True
 
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError):
+            # If 3lib is down.
+            _3libup = False
             try:
                 page = session.get(librocks, headers=get_request_headers(), timeout=self.timeout)
 
             except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
                 raise MetadataError("Both 3lib and LibraryRocks failed to connect. The last error was: ", err)
-
-            # If 3lib is down.
-            _3libup = False
 
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
 
@@ -71,8 +67,9 @@ class Metadata:
                 # Sometimes there's no covers299 version of the cover.
                 try:
                     cover_url = re.sub("covers100", "covers200", cover["data-src"])
+
                 except KeyError:
-                    cover_url = "https://libgen.rocks/img/blank.png"
+                    raise MetadataError("Could not find cover for this specific md5.")
 
             if cover_url == "/img/cover-not-exists.png":
                 # This image doesn't actually render,
@@ -84,8 +81,9 @@ class Metadata:
             try:
                 cover = soup.find("img")
                 cover_url = "https://libgen.rocks" + cover["src"]
+
             except KeyError:
-                cover_url = "https://libgen.rocks/img/blank.png"
+                raise MetadataError("Could not find cover for this specific md5.")
 
         return cover_url
 

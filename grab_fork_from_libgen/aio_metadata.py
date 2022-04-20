@@ -50,14 +50,13 @@ class AIOMetadata:
             _3libup = True
 
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError):
+            # If 3lib is down.
             _3libup = False
             try:
                 page = await session.get(librocks, headers=get_request_headers(), timeout=self.timeout)
 
             except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
                 raise MetadataError("Both 3lib and LibraryRocks failed to connect. The last error was: ", err)
-            # If 3lib is down.
-
 
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
 
@@ -71,6 +70,7 @@ class AIOMetadata:
                 # Sometimes there's no covers299 version of the cover.
                 try:
                     cover_url = re.sub("covers100", "covers200", cover["data-src"])
+
                 except KeyError:
                     raise MetadataError("Could not find cover for this specific md5.")
 
@@ -85,7 +85,7 @@ class AIOMetadata:
                 cover = soup.find("img")
                 cover_url = "https://libgen.rocks" + cover["src"]
             except KeyError:
-                cover_url = "https://libgen.rocks/img/blank.png"
+                raise MetadataError("Could not find cover for this specific md5.")
 
         return cover_url
 
