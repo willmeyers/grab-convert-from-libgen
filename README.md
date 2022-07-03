@@ -44,6 +44,11 @@ from grab_fork_from_libgen import *
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
 ## Fork Overview
+
+This fork was made because some things may not comply with the original library's author ideas.
+Most of the heavy work was done by [Willmeyers](https://github.com/willmeyers/grab-convert-from-libgen).
+This was originally intended for personal use, but some people may find these new options useful.
+
 ### The following changes are made in this fork:
 
 New async classes.  
@@ -60,15 +65,8 @@ It's md5 (e.g.: `B86D006359AD3939907D951A20CB4EF1`)
 It's topic (either `fiction` or `sci-tech`)  
 And now fiction results also have `extension` and `size` to improve consistency.  
 
-
 All these features are **OPT-IN**.  
 This means your code won't break when migrating to this fork, and you may use the new functions how you want to.
-
-You can read the documentation for the new methods below.  
-This fork was made because some things may not comply with the original's author idea for the library.  
-It's also made by a beginner, and while i've tried my best to use DRY, typehints, etc. Some things can still be improved.  
-
-Of course, this would not be possible without [Willmeyers](https://github.com/willmeyers/grab-convert-from-libgen) work.
 
 ## Quickstart
 
