@@ -65,7 +65,7 @@ class AIOMetadata:
             cover = soup.find("img", {"class": "cover"})
             try:
                 # 3lib returns a very small cover on the search page, this changes the url to render the bigger one.
-                if cover.has_attr("data-src"):
+                if cover is not None:
                     cover_url = re.sub("covers100", "covers299", cover["data-src"])
                 else:
                     raise TypeError
@@ -97,7 +97,7 @@ class AIOMetadata:
             try:
                 cover = soup.select("img:last-of-type")[1]
 
-                if cover and cover.has_attr("src"):
+                if cover is not None:
                     cover_url = "https://libgen.rocks" + cover["src"]
                 else:
                     raise TypeError

@@ -94,7 +94,7 @@ class Metadata:
             try:
                 cover = soup.select("img:last-of-type")[1]
 
-                if cover and cover.has_attr("src"):
+                if cover is not None:
                     cover_url = "https://libgen.rocks" + cover["src"]
                 else:
                     raise TypeError
