@@ -66,6 +66,10 @@ class AIOMetadata:
             try:
                 # 3lib returns a very small cover on the search page, this changes the url to render the bigger one.
                 cover_url = re.sub("covers100", "covers299", cover["data-src"])
+
+            except TypeError:
+                raise MetadataError("Could not find cover for this specific md5.")
+
             except KeyError:
                 # Sometimes there's no covers299 version of the cover.
                 try:
@@ -85,6 +89,8 @@ class AIOMetadata:
                 cover = soup.find("img")
                 cover_url = "https://libgen.rocks" + cover["src"]
             except KeyError:
+                raise MetadataError("Could not find cover for this specific md5.")
+            except TypeError:
                 raise MetadataError("Could not find cover for this specific md5.")
 
         return cover_url
