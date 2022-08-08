@@ -43,13 +43,9 @@ from grab_fork_from_libgen import *
 ```
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
-## Fork Overview
+## v3 Overview
 
-This fork was made because some things may not comply with the original library's author ideas.
-Most of the heavy work was done by [Willmeyers](https://github.com/willmeyers/grab-convert-from-libgen).
-This was originally intended for personal use, but some people may find these new options useful.
-
-### The following changes are made in this fork:
+This new version includes some new features, all of them being optional and not code-breaking.
 
 New async classes.  
 New filtering option.  
@@ -63,10 +59,12 @@ Some small fixes for edge cases.
 In this version, every entry has these new properties attached:  
 It's md5 (e.g.: `B86D006359AD3939907D951A20CB4EF1`)  
 It's topic (either `fiction` or `sci-tech`)  
-And now fiction results also have `extension` and `size` to improve consistency.  
+And now fiction results also have `extension` and `size` to improve consistency.
 
 All these features are **OPT-IN**.  
 This means your code won't break when migrating to this fork, and you may use the new functions how you want to.
+
+**PS**: Pagination is slower. You are adding the extra overhead of rendering javascript, so expect longer wait times.
 
 ## Quickstart
 
@@ -194,9 +192,9 @@ The async version and pagination info is powered by [requests-html](https://gith
 Using pagination will download Chrominium to your home folder on your first run. e.g.: "~/.pyppeteer/".
 This only happens once. This happens because LibraryGenesis pagination uses javascript, 
 which is not rendedered by default in the HTML, to render its pagination system.  
-Because of this, in some cases your request may take a little longer to return.
+Because of this, the pagination system is generally slower than its counterpart.
 
-It's important to pay attention to this if you use services (like Heroku Free Tier) with limited storage space.
+It's important to pay attention to this if you use services (like Heroku Free Tier) with limited storage space and low timeouts.
 
 **Notice 2**:  
 For now, there's a `'file'` attribute on fiction results that may seem redundant when you have `'extension'` and
