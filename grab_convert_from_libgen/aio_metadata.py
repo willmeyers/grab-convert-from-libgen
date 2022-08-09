@@ -6,16 +6,20 @@ from requests import exceptions
 from requests_html import AsyncHTMLSession
 
 
+def _verify_topic(topic: str):
+    if topic not in ["sci-tech", "fiction"]:
+        raise MetadataError(
+            f"Topic '{topic}' is not valid. Valid topics are sci-tech or fiction."
+        )
+
+
 class AIOMetadata:
-    def __init__(self, md5: str, topic: str, timeout: int | tuple | None = None):
+    def __init__(self, timeout: int | tuple | None = None):
         # No method here is rate-limited, use it with caution!
         # You will get blocked for abusing this.
         # 2000ms between each call is probably safe.
         # Timeout = None equals to infinite timeout in requests library.
-        if topic not in ["sci-tech", "fiction"]:
-            raise MetadataError(
-                f"Topic '{topic}' is not valid. Valid topics are sci-tech or fiction."
-            )
+
 
         if isinstance(timeout, int):
             if timeout <= 0:
@@ -25,23 +29,21 @@ class AIOMetadata:
                 timeout = None
 
         self.timeout = timeout
-        self.topic = topic
-        self.md5 = md5
 
         # Common paterns for URLs used here.
         self.liblol_base = "http://library.lol"
         self.librocks_base = "https://libgen.rocks/ads.php?md5="
         self._3lib_base = "https://3lib.net/md5/"
 
-    async def get_cover(self) -> str:
+    async def get_cover(self, md5: str) -> str:
         session = AsyncHTMLSession()
 
         # Instead of raising an error if no cover is found (and if the request was suceeded), a "no cover" image link is
         # sent instead. It uses HTTP and no CORS. So it's usable in most websites.
         # Both 3lib and LibraryRocks doesn't use CORS in their cover images.
 
-        _3lib = self._3lib_base + self.md5
-        librocks = self.librocks_base + self.md5
+        _3lib = self._3lib_base + md5
+        librocks = self.librocks_base + md5
 
         # This function will try for both 3lib and libraryrocks.
         try:
@@ -109,21 +111,22 @@ class AIOMetadata:
 
         return cover_url
 
-    async def get_metadata(self) -> tuple:
+    async def get_metadata(self, md5: str, topic: str) -> tuple:
         session = AsyncHTMLSession()
         topic_url = None
         # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
         # This method raises an error if a download link is not found. But no error is a description is not.
         # This is because while most files do have a d_link, a lot don't have a description.
+        _verify_topic(topic)
 
-        if self.topic == "sci-tech":
+        if topic == "sci-tech":
             topic_url = "/main/"
-        elif self.topic == "fiction":
+        elif topic == "fiction":
             topic_url = "/fiction/"
         else:
             raise MetadataError("Topic is not valid.")
 
-        url = self.liblol_base + topic_url + self.md5
+        url = self.liblol_base + topic_url + md5
 
         # Uses a md5 to take the download links.
         # It also scrapes the book's description.
