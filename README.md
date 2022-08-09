@@ -38,9 +38,9 @@ And then:
 
 ```python
 # Change
-from grab_fork_from_libgen import *
+from grab_convert_from_libgen import *
 # To
-from grab_fork_from_libgen import *
+from grab_convert_from_libgen import *
 ```
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
@@ -75,7 +75,7 @@ Your IDE will automatically interpret these changes and give you new suggestions
 The example below shows how to grab the first book returned from a search and save it to your current working directory as a pdf.
 
 ```python
-from grab_fork_from_libgen import LibgenSearch
+from grab_convert_from_libgen import LibgenSearch
 
 res = LibgenSearch('sci-tech', q='test')
 
@@ -85,7 +85,7 @@ res.first(convert_to='pdf')
 This is an example that gets and downloads the first book that matches the given filter(s).
 
 ```python
-from grab_fork_from_libgen import LibgenSearch
+from grab_convert_from_libgen import LibgenSearch
 
 res = LibgenSearch('fiction', q='test')
 
@@ -97,7 +97,7 @@ res.get(language="English", save_to='.')
 This one shows basic search usage (with pagination on).
 
 ```python
-from grab_fork_from_libgen import LibgenSearch
+from grab_convert_from_libgen import LibgenSearch
 
 # Refer to the documentation below to learn more about query filters.
 libgen = LibgenSearch('sci-tech', q='test', res=100)
@@ -111,7 +111,7 @@ libgen_results = libgen_search["data"]
 And for the async versions:
 
 ```python
-from grab_fork_from_libgen import AIOLibgenSearch
+from grab_convert_from_libgen import AIOLibgenSearch
 
 
 async def libgen():
@@ -268,7 +268,7 @@ This class holds the methods responsible for metadata scraping.
 
 ```python
 # First, import the Metadata class from grab_fork_from_libgen.
-from grab_fork_from_libgen import LibgenSearch, Metadata
+from grab_convert_from_libgen import LibgenSearch, Metadata
 
 # ...
 # pagination=True means you opt-in for pagination info.
