@@ -131,7 +131,7 @@ Only search parameters marked as required are needed when searching.
 
 `sort`: Sort results. Choices are `def` (default), `id`, `title`, `author`, `publisher`, `year`
 
-`sortmode`: Ascending or decending. Choices are `ASC` or `DESC`
+`sortmode`: Ascending or descending. Choices are `ASC` or `DESC`
 
 `column`: The column to search against. Choices are `def` (default), `title`, `author`, `publisher`, `year`, `series`, `ISBN`, `Language`, or `md5`.
 
@@ -191,7 +191,7 @@ Results are ordered in the same order as they would be displayed on libgen itsel
 The async version and pagination info is powered by [requests-html](https://github.com/psf/requests-html)
 
 **Notice**:  
-Using pagination will download Chrominium to your home folder on your first run. e.g.: "~/.pyppeteer/".
+Using pagination will download Chromium to your home folder on your first run. e.g.: "~/.pyppeteer/".
 This only happens once. This happens because LibraryGenesis pagination uses javascript, 
 which is not rendedered by default in the HTML, to render its pagination system.  
 Because of this, in some cases your request may take a little longer to return.
