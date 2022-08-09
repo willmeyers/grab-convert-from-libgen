@@ -38,9 +38,9 @@ And then:
 
 ```python
 # Change
-from grab_convert_from_libgen import *
+from grab_fork_from_libgen import *
 # To
-from grab_convert_from_libgen import *
+from grab_fork_from_libgen import *
 ```
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
@@ -67,12 +67,15 @@ This means your code won't break when migrating to this fork, and you may use th
 
 **PS**: Pagination is slower. You are adding the extra overhead of rendering javascript, so expect longer wait times.
 
+As of v3, this library now uses Pydantic to improve data parsing and typing.  
+Your IDE will automatically interpret these changes and give you new suggestions as you go.  
+
 ## Quickstart
 
 The example below shows how to grab the first book returned from a search and save it to your current working directory as a pdf.
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 res = LibgenSearch('sci-tech', q='test')
 
@@ -82,7 +85,7 @@ res.first(convert_to='pdf')
 This is an example that gets and downloads the first book that matches the given filter(s).
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 res = LibgenSearch('fiction', q='test')
 
@@ -94,7 +97,7 @@ res.get(language="English", save_to='.')
 This one shows basic search usage (with pagination on).
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 # Refer to the documentation below to learn more about query filters.
 libgen = LibgenSearch('sci-tech', q='test', res=100)
@@ -108,7 +111,8 @@ libgen_results = libgen_search["data"]
 And for the async versions:
 
 ```python
-from grab_convert_from_libgen import AIOLibgenSearch
+from grab_fork_from_libgen import AIOLibgenSearch
+
 
 async def libgen():
     # Refer to the documentation below to learn more about query filters.
@@ -116,7 +120,7 @@ async def libgen():
     # We opt-out of pagination info this time...
     # So the function returns your results directly
     libgen_results = await libgen.get_results()
-    
+
 ```
 
 You must specify a `topic` when creating a search instance. Choices are `fiction` or `sci-tech`.
@@ -264,12 +268,11 @@ This class holds the methods responsible for metadata scraping.
 
 ```python
 # First, import the Metadata class from grab_fork_from_libgen.
-from grab_convert_from_libgen import LibgenSearch, Metadata
+from grab_fork_from_libgen import LibgenSearch, Metadata
 
 # ...
 # pagination=True means you opt-in for pagination info.
 my_results = LibgenSearch.get_results(pagination=True)
-
 
 # Get the values from your search results
 search_results = my_results["data"]
@@ -280,37 +283,35 @@ topic = search_results[0]["topic"]
 
 # Instantiate a new Metadata class.
 # Please read the timeout documentation on the official requests library docs.
-meta = Metadata(md5, topic, timeout=(9, 18))
+meta = Metadata(timeout=(9, 18))
 
 # And use the respective methods.
-cover = meta.get_cover()
-d_links_and_desc = meta.get_metadata()
+cover = meta.get_cover(md5)
+d_links_and_desc = meta.get_metadata(md5, topic)
 
 ```
 #### Metadata - Class
-The `Metadata` class takes three arguments, one being optional:\
-
-`md5` = An `string`, a code used to identify the file on LibraryGenesis and others databases.
-
-`topic` = An `string`, the topic of the file on LibraryGenesis' database. Either `fiction` or `sci-tech`.
+The `Metadata` class takes one being optional argument:\
 
 `timeout (optional)` = Either `int`, `tuple` or `None`. Defaults to `None`, which equals to infinite timeout.\
 
 Please read more about using tuples in the official `requests` 
 [docs](https://docs.python-requests.org/en/latest/user/advanced/#timeouts).
 
-It's good practice to always provide a timeout value. As both the cover and download links providers can be down or
+It's good practice to always provide a timeout value. As both the cover and metadata providers can be down or
 slow at any given moment.\
 If they take too long, your code will hang.
 
 You can expect a `MetadataError` if something goes wrong.
 
 #### Metadata - Methods
-`get_cover` returns an `string`, which is the direct link to that file's cover image. If no cover is found, returns a
-`MetadataError`.
 
-`get_metadata` returns a `tuple`, the first value being a `dict` of all the direct download links of the file, and the
-second value being the file's description.   
+`get_cover(md5: str) -> str`
+The return string is a valid image url, corresponding to a file cover.
+
+`get_metadata(md5: str, topic: ValidTopics) -> MetadataResponse`
+Keep in mind that this method will throw an error if no download links is found. 
+
 
 Throws a `MetadataError` if no download link is found.
 If no description is found, returns `None` on the second value instead.

@@ -20,7 +20,6 @@ class AIOMetadata:
         # 2000ms between each call is probably safe.
         # Timeout = None equals to infinite timeout in requests library.
 
-
         if isinstance(timeout, int):
             if timeout <= 0:
                 timeout = None
