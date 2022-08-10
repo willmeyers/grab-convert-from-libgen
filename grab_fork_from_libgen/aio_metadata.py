@@ -107,7 +107,7 @@ class AIOMetadata:
 
         return cover_url
 
-    async def get_metadata(self, md5: str, topic: ValidTopics) -> MetadataResponse:
+    async def get_metadata(self, md5: str, topic: str) -> MetadataResponse:
         session = AsyncHTMLSession()
         topic_url = None
         # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
