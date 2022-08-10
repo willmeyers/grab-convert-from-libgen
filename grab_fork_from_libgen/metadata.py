@@ -102,7 +102,7 @@ class Metadata:
 
         return cover_url
 
-    def get_metadata(self, md5: str, topic: ValidTopics) -> MetadataResponse:
+    def get_metadata(self, md5: str, topic: str) -> MetadataResponse:
         session = HTMLSession()
         topic_url = None
 
