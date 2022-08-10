@@ -38,9 +38,9 @@ And then:
 
 ```python
 # Change
-from grab_convert_from_libgen import *
+from grab_fork_from_libgen import *
 # To
-from grab_convert_from_libgen import *
+from grab_fork_from_libgen import *
 ```
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
@@ -114,7 +114,7 @@ the library in the future.
 The example below shows how to grab the first book returned from a search and save it to your current working directory as a pdf.
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 res = LibgenSearch('sci-tech', q='test')
 
@@ -124,7 +124,7 @@ res.first(convert_to='pdf')
 This is an example that gets and downloads the first book that matches the given filter(s).
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 res = LibgenSearch('fiction', q='test')
 
@@ -136,7 +136,7 @@ res.get(language="English", save_to='.')
 This one shows basic search usage (with pagination on).
 
 ```python
-from grab_convert_from_libgen import LibgenSearch
+from grab_fork_from_libgen import LibgenSearch
 
 # Refer to the documentation below to learn more about query filters.
 libgen = LibgenSearch('sci-tech', q='test', res=100)
@@ -150,7 +150,7 @@ libgen_results = libgen_search["data"]
 And for the async versions:
 
 ```python
-from grab_convert_from_libgen import AIOLibgenSearch
+from grab_fork_from_libgen import AIOLibgenSearch
 
 
 async def libgen():
@@ -309,7 +309,7 @@ This class holds the methods responsible for metadata scraping.
 
 ```python
 # First, import the Metadata class from grab_fork_from_libgen.
-from grab_convert_from_libgen import LibgenSearch, Metadata
+from grab_fork_from_libgen import LibgenSearch, Metadata
 
 # ...
 # pagination=True means you opt-in for pagination info.
@@ -387,24 +387,25 @@ Describes the response from `Metadata.get_metadata()`
 e.g.:
 
 ```python
-from grab_convert_from_libgen import LibgenSearch, Metadata, ValidTopics, SearchEntry, MetadataResponse
-
+from grab_fork_from_libgen import LibgenSearch, Metadata, ValidTopics, SearchEntry, MetadataResponse
 
 lbs = LibgenSearch(ValidTopics.fiction, q="query")
-lbr = lbs.get_results()[0] # Even if you don't define a entry as SearchEntry, your IDE will automatically know it's one.
+lbr = lbs.get_results()[
+    0]  # Even if you don't define a entry as SearchEntry, your IDE will automatically know it's one.
 
 # Your IDE will know that a entry has the "topic" property ;)
-topic = lbr.topic 
-
+topic = lbr.topic
 
 lbm: MetadataResponse = Metadata().get_metadata(md5, ValidTopics.sci_tech)
-download = lbm.download_links # Example of accessing a model property.
+download = lbm.download_links  # Example of accessing a model property.
 
 ```
 
 If you want to revert to using square brackets, just do:
+
 ```python
-from grab_convert_from_libgen import LibgenSearch, SearchEntry, ValidTopics
+from grab_fork_from_libgen import LibgenSearch, SearchEntry, ValidTopics
+
 lbs = LibgenSearch(ValidTopics.fiction, q="query")
 lbr = lbs.get_results()[0].dict()
 
