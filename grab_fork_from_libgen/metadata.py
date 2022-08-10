@@ -135,7 +135,7 @@ class Metadata:
         description = soup.select("div:last-of-type")[1].text
 
         # Removes "Description:" from the book's description.
-        fdescription = re.sub("Description:", "", description)
+        fdescription = re.sub("Description:", "", description) if description is not None else None
         download_links = {link.string: link["href"] for link in links}
         title = soup.select_one("#info > h1").text
         authors = soup.select_one("#info > p:nth-child(4)").text
