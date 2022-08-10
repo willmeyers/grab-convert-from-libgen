@@ -15,6 +15,7 @@ from .search_parameters import SciTechSearchParameters, FictionSearchParameters
 from .search_config import get_request_headers
 from .convert import ConversionError, convert_file_to_format
 from .exceptions import LibgenError, InvalidSearchParameter
+from .models.search_models import SearchEntry
 
 
 class LibgenSearch:
@@ -326,7 +327,7 @@ class LibgenSearch:
 
         return results
 
-    def get_results(self, pagination: bool = False) -> OrderedDict | Dict:
+    def get_results(self, pagination: bool = False) -> OrderedDict[int, SearchEntry] | Dict:
         # Returns both values, but only caches one.
         # This is to avoid messing with other functions such as first() and get().
         # Coding in compliance with someone's code is funny

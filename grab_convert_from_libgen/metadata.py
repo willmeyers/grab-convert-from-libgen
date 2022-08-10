@@ -2,16 +2,10 @@ from bs4 import BeautifulSoup
 from .exceptions import MetadataError
 from .search_config import get_request_headers, get_mirror_sources
 from .models.metadata_models import MetadataResponse
+from .models.search_models import ValidTopics
 import re
 from requests import exceptions
 from requests_html import HTMLSession
-
-
-def _verify_topic(topic: str):
-    if topic not in ["sci-tech", "fiction"]:
-        raise MetadataError(
-            f"Topic '{topic}' is not valid. Valid topics are sci-tech or fiction."
-        )
 
 
 class Metadata:
@@ -108,7 +102,7 @@ class Metadata:
 
         return cover_url
 
-    def get_metadata(self, md5: str, topic: str) -> MetadataResponse:
+    def get_metadata(self, md5: str, topic: ValidTopics) -> MetadataResponse:
         session = HTMLSession()
         topic_url = None
 
@@ -116,7 +110,6 @@ class Metadata:
         # This method raises an error if a download link is not found. But no error is a description is not.
         # This is because while most files do have a d_link, a lot don't have a description.
 
-        _verify_topic(topic)
         if topic == "sci-tech":
             topic_url = "/main/"
         elif topic == "fiction":
@@ -146,6 +139,7 @@ class Metadata:
         download_links = {link.string: link["href"] for link in links}
         title = soup.select_one("#info > h1").text
         authors = soup.select_one("#info > p:nth-child(4)").text
+        # Removes "Author(s): " from the book's authors paragraph.
         fauthors = authors.replace("Author(s): ", "")
 
         metadata_results = MetadataResponse(download_links=download_links,

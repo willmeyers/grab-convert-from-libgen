@@ -3,11 +3,6 @@ from pydantic import BaseModel, Field, validator
 from ..exceptions import MetadataError
 
 
-class ValidTopics(str, Enum):
-    fiction = "fiction"
-    scitech = "sci-tech"
-
-
 class MetadataResponse(BaseModel):
     download_links: dict | None
     description: str | None

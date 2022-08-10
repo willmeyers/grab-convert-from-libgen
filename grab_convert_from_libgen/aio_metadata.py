@@ -1,16 +1,13 @@
 from bs4 import BeautifulSoup
 from .exceptions import MetadataError
 from .search_config import get_request_headers, get_mirror_sources
+from .models.metadata_models import MetadataResponse
+from .models.search_models import ValidTopics
 import re
 from requests import exceptions
 from requests_html import AsyncHTMLSession
 
 
-def _verify_topic(topic: str):
-    if topic not in ["sci-tech", "fiction"]:
-        raise MetadataError(
-            f"Topic '{topic}' is not valid. Valid topics are sci-tech or fiction."
-        )
 
 
 class AIOMetadata:
@@ -110,13 +107,13 @@ class AIOMetadata:
 
         return cover_url
 
-    async def get_metadata(self, md5: str, topic: str) -> tuple:
+    async def get_metadata(self, md5: str, topic: ValidTopics) -> MetadataResponse:
         session = AsyncHTMLSession()
         topic_url = None
         # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
         # This method raises an error if a download link is not found. But no error is a description is not.
         # This is because while most files do have a d_link, a lot don't have a description.
-        _verify_topic(topic)
+
 
         if topic == "sci-tech":
             topic_url = "/main/"
@@ -140,14 +137,16 @@ class AIOMetadata:
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
         links = soup.find_all("a", string=get_mirror_sources())
         # Selects the last div, which is the description div.
-        descdiv = soup.select("div:last-of-type")[1].text
-        # Removes "Description:" from the book's description.
-        desc = re.sub("Description:", "", descdiv)
-        download_links = {link.string: link["href"] for link in links}
+        description = soup.select("div:last-of-type")[1].text
 
-        if download_links is None:
-            raise MetadataError("Could not find any download links.")
-        # If the description is empty, an empty string would be returned.
-        if desc == "":
-            desc = None
-        return download_links, desc
+        # Removes "Description:" from the book's description.
+        fdescription = re.sub("Description:", "", description)
+        download_links = {link.string: link["href"] for link in links}
+        title = soup.select_one("#info > h1").text
+        authors = soup.select_one("#info > p:nth-child(4)").text
+        # Removes "Author(s): " from the book's authors paragraph.
+        fauthors = authors.replace("Author(s): ", "")
+
+        metadata_results = MetadataResponse(download_links=download_links,
+                                            description=fdescription, authors=fauthors, title=title)
+        return metadata_results

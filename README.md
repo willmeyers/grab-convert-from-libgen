@@ -44,9 +44,13 @@ from grab_convert_from_libgen import *
 ```
 That's it. Your code will still work as expected, and you can implement the new features as you go.
 
-## v3 Overview
+### Fork Overview
+A possible merging with the original repo is on the works, but i will keep this repo open because i may need to push some changes when i need it.
+For now, every new feature is exclusive to this fork, but when the merging happens, only the features exclusive to this will be listed here.
 
-This new version includes some new features, all of them being optional and not code-breaking.
+### v3 Overview
+
+This new version includes these new features:
 
 New async classes.  
 New filtering option.  
@@ -62,13 +66,48 @@ It's md5 (e.g.: `B86D006359AD3939907D951A20CB4EF1`)
 It's topic (either `fiction` or `sci-tech`)  
 And now fiction results also have `extension` and `size` to improve consistency.
 
-All these features are **OPT-IN**.  
-This means your code won't break when migrating to this fork, and you may use the new functions how you want to.
-
 **PS**: Pagination is slower. You are adding the extra overhead of rendering javascript, so expect longer wait times.
 
 As of v3, this library now uses Pydantic to improve data parsing and typing.  
 Your IDE will automatically interpret these changes and give you new suggestions as you go.  
+Some models are exported for your convenience.
+
+
+### Migrating to v3
+The main change between this version and older ones is the fact that we are now using Pydantic.
+Pydantic models are basically python classes, so you can't access their properties using bracket notation.
+
+To help you migrate, we recommend calling this in your `.get_results` entries and `.get_metadata` calls.
+```python
+lbs = LibgenSearch(topic, q="Text")
+lbr = lbs.get_results()
+
+# A entry which you would access using bracket notation...
+# Your IDE will complaing that "SearchEntry" has no .getitem property...
+entry = lbr[0]
+entry_title = entry["title"]
+
+# So you need to call .dict in all pydantic models:
+entry = lbr[0].dict()
+entry_title = entry["title"]
+
+```
+
+Everytime you face a similar problem, you can use this solution while you get ready for migration.
+
+When migrating, just change bracket notations to dot notation.
+```python
+
+title = entry["title"]
+
+# To
+
+title = entry.title
+
+```
+
+Of course, you can always just keep using v2 if you are not interested in the new features. Migrating shouldn't be too hard, and it will help
+the library in the future.
 
 ## Quickstart
 
@@ -165,7 +204,7 @@ Only search parameters marked as required are needed when searching.
 ### LibgenSearch
 #### get_results
 
-`get_results(self, pagination: Optional[bool]) -> OrderedDict`
+`get_results(self, pagination: Optional[bool]) -> OrderedDict[int, SearchEntry] | Dict`
 
 Caches and returns results based on the search parameters the `LibgenSearch` objects was initialized with. 
 Takes one optional boolean argument.
@@ -192,6 +231,8 @@ If the user sets pagination to **False** or doesn't provide any value, this Orde
 Please refer to `Quickstart` for a quick guide.
 
 Results are ordered in the same order as they would be displayed on libgen itself with the book's id serving as the key.
+
+You can also import the `SearchEntry` model to see which values are present in each search result entry.
 
 The async version and pagination info is powered by [requests-html](https://github.com/psf/requests-html)
 
@@ -328,3 +369,46 @@ Async I/O is provided by `aiofiles` and `requests-html`.
 
 #### AIOMetadata
 Async methods in this classes are made using `requests-html`.
+
+
+### Models
+These are pydantic models which are exported by default.
+
+`ValidTopics`:  
+Define the valid topics which you can use in search and metadatada operations.
+
+`SearchEntry`:
+This describes the values inside each search result entry.
+e.g.: md5, series, etc.
+
+`MetadataResponse`:
+Describes the response from `Metadata.get_metadata()`
+
+e.g.:
+
+```python
+from grab_convert_from_libgen import LibgenSearch, Metadata, ValidTopics, SearchEntry, MetadataResponse
+
+
+lbs = LibgenSearch(ValidTopics.fiction, q="query")
+lbr = lbs.get_results()[0] # Even if you don't define a entry as SearchEntry, your IDE will automatically know it's one.
+
+# Your IDE will know that a entry has the "topic" property ;)
+topic = lbr.topic 
+
+
+lbm: MetadataResponse = Metadata().get_metadata(md5, ValidTopics.sci_tech)
+download = lbm.download_links # Example of accessing a model property.
+
+```
+
+If you want to revert to using square brackets, just do:
+```python
+from grab_convert_from_libgen import LibgenSearch, SearchEntry, ValidTopics
+lbs = LibgenSearch(ValidTopics.fiction, q="query")
+lbr = lbs.get_results()[0].dict()
+
+# This way you lose the ability to predict what's inside each entry, but this may help you migrate to the newer version.
+possible_title = lbr["title"]
+
+```
