@@ -15,7 +15,6 @@ from .search_parameters import SciTechSearchParameters, FictionSearchParameters
 from .search_config import get_request_headers
 from .convert import ConversionError, convert_file_to_format
 from .exceptions import LibgenError, InvalidSearchParameter
-from .models.search_models import SearchEntry
 
 
 class LibgenSearch:

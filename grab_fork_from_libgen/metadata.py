@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
 from .exceptions import MetadataError
 from .search_config import get_request_headers, get_mirror_sources
-from .models.metadata_models import MetadataResponse
-from .models.search_models import ValidTopics
+from .metadata_helpers import fiction_field_value, scitech_field_value
 import re
 from requests import exceptions
 from requests_html import HTMLSession
@@ -25,16 +24,18 @@ class Metadata:
         self.timeout = timeout
 
         # Common paterns for URLs used here.
-        self.liblol_base = "http://library.lol"
-        self.librocks_base = "https://libgen.rocks/ads.php?md5="
+        self._liblol_base = "http://library.lol"
+        self._librocks_base = "https://libgen.rocks/ads.php?md5="
         self._3lib_base = "https://3lib.net/md5/"
+        self._libgen_fiction_base = "https://libgen.is/fiction/"
+        self._libgen_scitech_base = "https://libgen.is/book/index.php?md5="
 
     def get_cover(self, md5: str) -> str:
         session = HTMLSession()
         # Both 3lib and LibraryRocks doesn't use CORS in their cover images.
 
         _3lib = self._3lib_base + md5
-        librocks = self.librocks_base + md5
+        librocks = self._librocks_base + md5
 
         # This function will try for both 3lib and libraryrocks.
         try:
@@ -102,7 +103,78 @@ class Metadata:
 
         return cover_url
 
-    def get_metadata(self, md5: str, topic: str) -> MetadataResponse:
+    def _get_fiction_metadata(self, md5: str):
+        session = HTMLSession()
+        url = self._libgen_fiction_base + md5
+        try:
+            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page.raise_for_status()
+        except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
+            raise MetadataError("Error while connecting to Libgen: ", err)
+
+        soup = BeautifulSoup(page.html.raw_html, "lxml")
+
+        return {
+            "title": fiction_field_value("Title:", soup),
+            "authors": fiction_field_value("Author(s):", soup),
+            "edition": fiction_field_value("Edition:", soup),
+            "language": fiction_field_value("Language:", soup),
+            "year": fiction_field_value("Year:", soup),
+            "publisher": fiction_field_value("Publisher:", soup),
+            "isbn": fiction_field_value("ISBN:", soup),
+            "extension": fiction_field_value("Format:", soup),
+            "size": fiction_field_value("File size:", soup),
+            "description": fiction_field_value("Description", soup)
+        }
+
+    def _get_scitech_metadata(self, md5: str):
+        session = HTMLSession()
+        url = self._libgen_scitech_base + md5
+        try:
+            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page.raise_for_status()
+        except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
+            raise MetadataError("Error while connecting to Libgen: ", err)
+
+        soup = BeautifulSoup(page.html.raw_html, "lxml")
+        # A special case, no field name attached.
+        try:
+            # The description element is an td with colspan = 4
+            description = soup.find("td", colspan="4").text.strip()
+
+            if description == "":
+                description = None
+        except AttributeError:
+            description = None
+
+        return {
+            "title": scitech_field_value("Title: ", soup),
+            "authors": scitech_field_value("Author(s):", soup),
+            "edition": scitech_field_value("Edition:", soup),
+            "language": scitech_field_value("Language:", soup),
+            "year": scitech_field_value("Year:", soup),
+            "publisher": scitech_field_value("Publisher:", soup),
+            "isbn": scitech_field_value("ISBN:", soup),
+            "extension": scitech_field_value("Extension:", soup),
+            "size": scitech_field_value("Size:", soup),
+            "description": description
+        }
+
+    def get_metadata(self, md5: str, topic: str):
+        topic_url = None
+
+        # This function scrapes all the avaiable metadata on LibraryLol. Description and Direct download link.
+        # This method raises an error if a download link is not found. But no error is a description is not.
+        # This is because while most files do have a d_link, a lot don't have a description.
+
+        if topic == "sci-tech":
+            return self._get_scitech_metadata(md5)
+        elif topic == "fiction":
+            return self._get_fiction_metadata(md5)
+        else:
+            raise MetadataError("Topic is not valid. Valid topics are \"fiction\" and \"sci-tech\".")
+
+    def get_download_links(self, md5: str, topic: str):
         session = HTMLSession()
         topic_url = None
 
@@ -115,9 +187,9 @@ class Metadata:
         elif topic == "fiction":
             topic_url = "/fiction/"
         else:
-            raise MetadataError("Topic is not valid.")
+            raise MetadataError("Topic is not valid. Valid topics are \"fiction\" and \"sci-tech\".")
 
-        url = self.liblol_base + topic_url + md5
+        url = self._liblol_base + topic_url + md5
 
         # Uses a md5 to take the download links.
         # It also scrapes the book's description.
@@ -131,17 +203,6 @@ class Metadata:
 
         soup = BeautifulSoup(page.html.raw_html, "html.parser")
         links = soup.find_all("a", string=get_mirror_sources())
-        # Selects the last div, which is the description div.
-        description = soup.select("div:last-of-type")[1].text
-
-        # Removes "Description:" from the book's description.
-        fdescription = re.sub("Description:", "", description) if description is not None else None
         download_links = {link.string: link["href"] for link in links}
-        title = soup.select_one("#info > h1").text
-        authors = soup.select_one("#info > p:nth-child(4)").text
-        # Removes "Author(s): " from the book's authors paragraph.
-        fauthors = authors.replace("Author(s): ", "")
 
-        metadata_results = MetadataResponse(download_links=download_links,
-                                            description=fdescription, authors=fauthors, title=title)
-        return metadata_results
+        return download_links

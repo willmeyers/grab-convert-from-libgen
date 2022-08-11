@@ -68,46 +68,12 @@ And now fiction results also have `extension` and `size` to improve consistency.
 
 **PS**: Pagination is slower. You are adding the extra overhead of rendering javascript, so expect longer wait times.
 
-As of v3, this library now uses Pydantic to improve data parsing and typing.  
-Your IDE will automatically interpret these changes and give you new suggestions as you go.  
-Some models are exported for your convenience.
+If you are migrating to v3, please pay attention to this:  
+As of v3, `Metadata.get_metadata()` actually returns relevant metadata.
+The `description` value should be more consistent, since we are now scraping the main libgen website.
+See the `Metadata` class docs below for more info.
 
-
-### Migrating to v3
-The main change between this version and older ones is the fact that we are now using Pydantic.
-Pydantic models are basically python classes, so you can't access their properties using bracket notation.
-
-To help you migrate, we recommend calling this in your `.get_results` entries and `.get_metadata` calls.
-```python
-lbs = LibgenSearch(topic, q="Text")
-lbr = lbs.get_results()
-
-# A entry which you would access using bracket notation...
-# Your IDE will complaing that "SearchEntry" has no .getitem property...
-entry = lbr[0]
-entry_title = entry["title"]
-
-# So you need to call .dict in all pydantic models:
-entry = lbr[0].dict()
-entry_title = entry["title"]
-
-```
-
-Everytime you face a similar problem, you can use this solution while you get ready for migration.
-
-When migrating, just change bracket notations to dot notation.
-```python
-
-title = entry["title"]
-
-# To
-
-title = entry.title
-
-```
-
-Of course, you can always just keep using v2 if you are not interested in the new features. Migrating shouldn't be too hard, and it will help
-the library in the future.
+The download links scraping has been moved to `Metadata.get_download_links()` and now only returns download links.
 
 ## Quickstart
 
@@ -347,18 +313,39 @@ You can expect a `MetadataError` if something goes wrong.
 
 #### Metadata - Methods
 
-`get_cover(md5: str) -> str`
-The return string is a valid image url, corresponding to a file cover.
+`get_cover(md5: str) -> str`  
+The return string is a valid image url, corresponding to a file cover.  
 
-`get_metadata(md5: str, topic: ValidTopics) -> MetadataResponse`
-Keep in mind that this method will throw an error if no download links is found. 
+`get_metadata(md5: str, topic: str) -> dict`
+This method will scrape the main libgen website for relevant info about a specific file in a specific topic.  
+This further improves on the metadata that you receive from search results.  
+This is the dictionary schema:  
+**All values are either `str` or `None`**  
+`title`  
+`authors`
+`edition`
+`language`
+`year`
+`publisher`
+`isbn`
+`extension`
+`size`
+`description`
 
+`get_download_links(md5: str, topic: str) -> dict`  
+
+This will return valid direct download links for a given md5 in a given topic.  
+
+*This used to be part of `.get_metadata()`, but is now on it's on method because we are scraping a different url.*  
 
 Throws a `MetadataError` if no download link is found.
 If no description is found, returns `None` on the second value instead.
 
 Please do note that none of these methods are rate-limited. If you abuse them, you will get blocked.  
 From personal experience, `1500ms-2000ms` between each call is probably safe.
+
+If something you believe should exist, doesn't, please make sure you are using a valid md5 and the topic provided corresponds to it.  
+If it's still not working as expected, please open an issue describing the issue and we will look into it asap.
 
 ### Async Classes
 #### AIOLibgenSearch
@@ -369,47 +356,3 @@ Async I/O is provided by `aiofiles` and `requests-html`.
 
 #### AIOMetadata
 Async methods in this classes are made using `requests-html`.
-
-
-### Models
-These are pydantic models which are exported by default.
-
-`ValidTopics`:  
-Define the valid topics which you can use in search and metadatada operations.
-
-`SearchEntry`:
-This describes the values inside each search result entry.
-e.g.: md5, series, etc.
-
-`MetadataResponse`:
-Describes the response from `Metadata.get_metadata()`
-
-e.g.:
-
-```python
-from grab_fork_from_libgen import LibgenSearch, Metadata, ValidTopics, SearchEntry, MetadataResponse
-
-lbs = LibgenSearch(ValidTopics.fiction, q="query")
-lbr = lbs.get_results()[
-    0]  # Even if you don't define a entry as SearchEntry, your IDE will automatically know it's one.
-
-# Your IDE will know that a entry has the "topic" property ;)
-topic = lbr.topic
-
-lbm: MetadataResponse = Metadata().get_metadata(md5, ValidTopics.sci_tech)
-download = lbm.download_links  # Example of accessing a model property.
-
-```
-
-If you want to revert to using square brackets, just do:
-
-```python
-from grab_fork_from_libgen import LibgenSearch, SearchEntry, ValidTopics
-
-lbs = LibgenSearch(ValidTopics.fiction, q="query")
-lbr = lbs.get_results()[0].dict()
-
-# This way you lose the ability to predict what's inside each entry, but this may help you migrate to the newer version.
-possible_title = lbr["title"]
-
-```

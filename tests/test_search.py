@@ -28,16 +28,6 @@ class TestLibgenSearch(unittest.TestCase):
 
         self.assertTrue(isinstance(results, dict))
 
-    def test_metadata(self):
-        search = LibgenSearch("sci-tech", **self.parameters)
-        results = search.get_results()
-        md5 = results[0]["md5"]
-        topic = results[0]["topic"]
-
-        meta = Metadata(md5, topic)
-        self.assertEqual(len(meta.get_metadata()), 2)
-        self.assertTrue(isinstance(meta.get_cover(), str))
-
 
 if __name__ == "__main__":
     unittest.main()

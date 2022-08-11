@@ -13,7 +13,6 @@ lxml = "^4.8.0"
 beautifulsoup4 = "^4.10.0"
 requests-html = "^0.10.0"
 aiofiles = "^0.8.0"
-pydantic = "^1.9.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
