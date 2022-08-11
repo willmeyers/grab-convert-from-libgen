@@ -68,7 +68,9 @@ And now fiction results also have `extension` and `size` to improve consistency.
 
 **PS**: Pagination is slower. You are adding the extra overhead of rendering javascript, so expect longer wait times.
 
-If you are migrating to v3, please pay attention to this:  
+If you were using this fork before, and is migrating to v3, please pay attention to this:  
+*If not, just jump to the documentation*  
+
 As of v3, `Metadata.get_metadata()` actually returns relevant metadata.
 The `description` value should be more consistent, since we are now scraping the main libgen website.
 See the `Metadata` class docs below for more info.
