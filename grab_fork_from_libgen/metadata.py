@@ -123,6 +123,7 @@ class Metadata:
             "year": fiction_field_value("Year:", soup),
             "publisher": fiction_field_value("Publisher:", soup),
             "isbn": fiction_field_value("ISBN:", soup),
+            "md5": fiction_field_value("ISBN:", soup),
             "extension": fiction_field_value("Format:", soup),
             "size": fiction_field_value("File size:", soup),
             "description": fiction_field_value("Description", soup)
@@ -157,6 +158,7 @@ class Metadata:
             "year": scitech_field_value("Year:", soup),
             "publisher": scitech_field_value("Publisher:", soup),
             "isbn": scitech_field_value("ISBN:", soup),
+            "md5": scitech_field_value("ISBN:", soup),
             "extension": scitech_field_value("Extension:", soup),
             "size": scitech_field_value("Size:", soup),
             "description": description
