@@ -143,7 +143,8 @@ class AIOMetadata:
         soup = BeautifulSoup(page.html.raw_html, "lxml")
         # A special case, no field name attached.
         try:
-            description = soup.find("tr:nth-child(19) > td").text.strip()
+            # The description element is an td with colspan = 4
+            description = soup.find("td", colspan="4").text.strip()
             if description == "":
                 description = None
         except AttributeError:
