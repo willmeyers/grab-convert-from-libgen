@@ -330,6 +330,8 @@ This is the dictionary schema:
 `year`
 `publisher`
 `isbn`
+`md5`
+`topic`
 `extension`
 `size`
 `description`

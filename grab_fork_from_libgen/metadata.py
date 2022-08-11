@@ -113,6 +113,15 @@ class Metadata:
             raise MetadataError("Error while connecting to Libgen: ", err)
 
         soup = BeautifulSoup(page.html.raw_html, "lxml")
+        try:
+            # The description element is an td with colspan = 2, with no class.
+            description = soup.find("td", colspan="2", class_=None).text.strip()
+
+            if description == "":
+                description = None
+        except AttributeError:
+            description = None
+
 
         return {
             "title": fiction_field_value("Title:", soup),
@@ -127,7 +136,7 @@ class Metadata:
             "topic": "fiction",
             "extension": fiction_field_value("Format:", soup),
             "size": fiction_field_value("File size:", soup),
-            "description": fiction_field_value("Description", soup)
+            "description": description
         }
 
     def _get_scitech_metadata(self, md5: str):
