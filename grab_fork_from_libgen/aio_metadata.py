@@ -166,9 +166,9 @@ class AIOMetadata:
     async def get_metadata(self, md5: str, topic: str):
 
         if topic == "sci-tech":
-            return self._get_scitech_metadata(md5)
+            return await self._get_scitech_metadata(md5)
         elif topic == "fiction":
-            return self._get_fiction_metadata(md5)
+            return await self._get_fiction_metadata(md5)
         else:
             raise MetadataError("Topic is not valid. Valid topics are \"fiction\" and \"sci-tech\".")
 
