@@ -117,6 +117,7 @@ class Metadata:
         return {
             "title": fiction_field_value("Title:", soup),
             "authors": fiction_field_value("Author(s):", soup),
+            "series": fiction_field_value("Series:", soup),
             "edition": fiction_field_value("Edition:", soup),
             "language": fiction_field_value("Language:", soup),
             "year": fiction_field_value("Year:", soup),
@@ -150,6 +151,7 @@ class Metadata:
         return {
             "title": scitech_field_value("Title: ", soup),
             "authors": scitech_field_value("Author(s):", soup),
+            "series": scitech_field_value("Series:", soup),
             "edition": scitech_field_value("Edition:", soup),
             "language": scitech_field_value("Language:", soup),
             "year": scitech_field_value("Year:", soup),

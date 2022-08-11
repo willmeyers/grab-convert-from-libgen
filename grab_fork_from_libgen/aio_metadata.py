@@ -106,7 +106,6 @@ class AIOMetadata:
 
         return cover_url
 
-
     async def _get_fiction_metadata(self, md5: str):
         session = AsyncHTMLSession()
         url = self._libgen_fiction_base + md5
@@ -121,6 +120,7 @@ class AIOMetadata:
         return {
             "title": fiction_field_value("Title:", soup),
             "authors": fiction_field_value("Author(s):", soup),
+            "series": scitech_field_value("Series:", soup),
             "edition": fiction_field_value("Edition:", soup),
             "language": fiction_field_value("Language:", soup),
             "year": fiction_field_value("Year:", soup),
@@ -153,6 +153,7 @@ class AIOMetadata:
         return {
             "title": scitech_field_value("Title: ", soup),
             "authors": scitech_field_value("Author(s):", soup),
+            "series": scitech_field_value("Series:", soup),
             "edition": scitech_field_value("Edition:", soup),
             "language": scitech_field_value("Language:", soup),
             "year": scitech_field_value("Year:", soup),
