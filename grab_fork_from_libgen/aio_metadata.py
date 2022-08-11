@@ -194,7 +194,7 @@ class AIOMetadata:
         # Ideally, this should only be done once the users actually wants to download a book.
 
         try:
-            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page = await session.get(url, headers=get_request_headers(), timeout=self.timeout)
             page.raise_for_status()
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
             raise MetadataError("Error while connecting to Librarylol: ", err)
