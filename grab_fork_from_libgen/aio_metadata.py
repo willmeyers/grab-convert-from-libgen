@@ -128,7 +128,7 @@ class AIOMetadata:
         return {
             "title": fiction_field_value("Title:", soup),
             "authors": fiction_field_value("Author(s):", soup),
-            "series": scitech_field_value("Series:", soup),
+            "series": fiction_field_value("Series:", soup),
             "edition": fiction_field_value("Edition:", soup),
             "language": fiction_field_value("Language:", soup),
             "year": fiction_field_value("Year:", soup),

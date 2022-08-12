@@ -122,7 +122,6 @@ class Metadata:
         except AttributeError:
             description = None
 
-
         return {
             "title": fiction_field_value("Title:", soup),
             "authors": fiction_field_value("Author(s):", soup),
