@@ -189,7 +189,7 @@ class LibgenSearch:
                 paginator_list = paginator.select("option")
                 # The total amount of pages avaiable.
                 # One page equals to 1, and so on.
-                total_pages: int | None = len(paginator_list)
+                total_pages: Optional[int] = len(paginator_list)
 
             except (KeyError, IndexError):
                 total_pages = 1
