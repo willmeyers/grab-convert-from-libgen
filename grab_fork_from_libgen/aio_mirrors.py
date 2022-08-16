@@ -32,7 +32,7 @@ class AIOLibgenMirror(ABC):
 
     @abstractmethod
     async def scrape_download_link(self):
-        pass
+        raise NotImplementedError("AIOLibgenMirror must implement scrape_download_link")
 
     async def download_file(self) -> Tuple:
         if self.download_link is None:

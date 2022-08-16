@@ -2,13 +2,14 @@ from bs4 import BeautifulSoup
 from .exceptions import MetadataError
 from .search_config import get_request_headers, get_mirror_sources
 from .metadata_helpers import fiction_field_value, scitech_field_value
+from typing import Union, Optional
 import re
 from requests import exceptions
 from requests_html import AsyncHTMLSession
 
 
 class AIOMetadata:
-    def __init__(self, timeout: int | tuple | None = None):
+    def __init__(self, timeout: Optional[Union[int, tuple]] = None):
         # No method here is rate-limited, use it with caution!
         # You will get blocked for abusing this.
         # 2000ms between each call is probably safe.

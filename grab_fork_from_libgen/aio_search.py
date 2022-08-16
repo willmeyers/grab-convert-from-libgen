@@ -2,7 +2,7 @@ import pathlib
 import re
 import urllib
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, Union
 from bs4 import BeautifulSoup
 
 # Removed import requests library statement.
@@ -12,6 +12,7 @@ import aiofiles
 import lxml.html as html
 
 from . import aio_mirrors as mirrors
+from .search_helpers import scitech_results_builder, fiction_results_builder
 from .search_parameters import SciTechSearchParameters, FictionSearchParameters
 from .search_config import get_request_headers
 from .convert import ConversionError, convert_file_to_format
@@ -108,65 +109,15 @@ class AIOLibgenSearch:
                 else:
                     continue
 
-    async def _get_scitech_results(self, pagination: bool) -> OrderedDict | Dict:
+    async def _get_scitech_results(self, pagination: bool) -> Union[OrderedDict, Dict]:
         """Returns a dictionary of search results."""
-        results = OrderedDict()
         session = AsyncHTMLSession()
 
         resp = await session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
-        html_tree = html.fromstring(resp.content)
 
-        try:
-            results_table = html_tree.xpath("/html/body/table[3]")[0]
-        except KeyError:
-            raise LibgenError("No results returned.")
-        except IndexError:
-            raise LibgenError("No results returned, this may be an parameter issue.")
-
-        for idx, tr in enumerate(results_table.xpath("tr")[1:]):
-            row = {}
-            for header, value in zip(
-                    [
-                        "id",
-                        "author(s)",
-                        "title",
-                        "publisher",
-                        "year",
-                        "pages",
-                        "language",
-                        "size",
-                        "extension",
-                        "mirror1",
-                        "mirror2",
-                        "mirror3",
-                        "mirror4",
-                        "mirror5",
-                        "edit",
-                    ],
-                    tr.getchildren(),
-            ):
-                if header in [
-                    "mirror1",
-                    "mirror2",
-                    "mirror3",
-                    "mirror4",
-                    "mirror5",
-                    "edit",
-                ] and list(value.iterlinks()):
-                    value = list(value.iterlinks())[0][2]
-                else:
-                    value = (
-                        value.text_content().strip().replace("\n", "").replace("\t", "")
-                    )
-
-                row.update({header: value})
-            mirror1 = row.get("mirror1")
-            md5 = re.sub('[\\Wa-z]', "", mirror1)
-            row["md5"] = md5
-            row["topic"] = self.topic
-            results[idx] = row
+        results = scitech_results_builder(resp.content, self.topic)
 
         if pagination:
             has_next_page: bool = False
@@ -214,64 +165,14 @@ class AIOLibgenSearch:
 
         return results
 
-    async def _get_fiction_results(self, pagination: bool) -> OrderedDict | Dict:
-        results = OrderedDict()
+    async def _get_fiction_results(self, pagination: bool) -> Union[OrderedDict, Dict]:
         session = AsyncHTMLSession()
 
         resp = await session.get(self.url, headers=get_request_headers())
         if resp.status_code != 200:
             raise LibgenError("The requested URL did not have status code 200.")
 
-        html_tree = html.fromstring(resp.content)
-
-        try:
-            results_table = html_tree.xpath("//table")[0]
-        except KeyError:
-            raise LibgenError("No results returned.")
-        except IndexError:
-            raise LibgenError("No results returned, this may be an parameter issue.")
-
-        for idx, tr in enumerate(results_table.xpath("//tr")[1:]):
-            row = {}
-            for header, value in zip(
-                    [
-                        "author(s)",
-                        "series",
-                        "title",
-                        "language",
-                        "file",
-                        "mirror1",
-                        "mirror2",
-                        "mirror3",
-                        "edit",
-                    ],
-                    tr.getchildren(),
-            ):
-                if header in ["mirror1", "mirror2", "mirror3", "edit"] and list(
-                        value.iterlinks()
-                ):
-                    value = list(value.iterlinks())[0][2]
-                else:
-                    value = (
-                        value.text_content().strip().replace("\n", "").replace("\t", "")
-                    )
-
-                row.update({header: value})
-
-            mirror1 = row.get("mirror1")
-            md5 = re.sub('[\\Wa-z]', "", mirror1)
-            row["md5"] = md5
-            row["topic"] = self.topic
-
-            file_info = row.get("file")
-            extension = re.findall(".*/", file_info)[0]
-            extension = re.sub(" /", "", extension)
-            size = re.findall("/.*", file_info)[0]
-            size = re.sub("/ ", "", size)
-            row["extension"] = extension.lower()
-            row["size"] = size
-
-            results[idx] = row
+        results = fiction_results_builder(resp.content, self.topic)
 
         if pagination:
             has_next_page: bool = False
@@ -321,7 +222,7 @@ class AIOLibgenSearch:
 
         return results
 
-    async def get_results(self, pagination: bool = False) -> OrderedDict | Dict:
+    async def get_results(self, pagination: bool = False) -> Union[OrderedDict, Dict]:
         # Returns both values, but only caches one.
         # This is to avoid messing with other functions such as first() and get().
         # Coding in compliance with someone's code is funny
@@ -348,7 +249,7 @@ class AIOLibgenSearch:
         if self.results is None:
             self.results = await self.get_results()
 
-        this_results: OrderedDict | Dict = self.results
+        this_results: Union[OrderedDict, Dict] = self.results
         # If self.results is a dict (meaning pagination was set to true when calling get_results() )
         if type(this_results) == dict:
             this_results = this_results.get("results")
@@ -377,7 +278,7 @@ class AIOLibgenSearch:
         if self.results is None:
             self.results = await self.get_results()
 
-        this_results: OrderedDict | Dict = self.results
+        this_results: Union[OrderedDict, Dict] = self.results
         # If self.results is a dict (meaning pagination was set to true when calling get_results() )
         if type(this_results) == dict:
             this_results = this_results.get("results")
@@ -404,8 +305,10 @@ class AIOLibgenSearch:
         filtered_results = {}
 
         if self.results is None:
-            self.results = self.get_results()
-        this_results = self.results
+            self.results = await self.get_results()
+
+        this_results: Union[OrderedDict, Dict] = self.results
+
         if type(this_results) == dict:
             this_results = this_results.get("data")
 
