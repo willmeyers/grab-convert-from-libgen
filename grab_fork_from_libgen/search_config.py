@@ -11,6 +11,6 @@ def get_request_headers():
 
 
 def get_mirror_sources():
-    # This is used by Metadata.get_metadata() method.
-    mirror_sources = ["GET", "Cloudflare", "IPFS.io", "Infura", "Pinata"]
+    # This is used by Metadata.get_download_links() method.
+    mirror_sources = ["GET", "Cloudflare", "IPFS.io", "Infura", "Pinata", "c4rex.co", "Crust"]
     return mirror_sources
