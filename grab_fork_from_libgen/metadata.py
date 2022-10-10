@@ -40,7 +40,7 @@ class Metadata:
 
         # This function will try for both 3lib and libraryrocks.
         try:
-            page = session.get(_3lib, headers=get_request_headers(), timeout=self.timeout)
+            page = session.get(_3lib, headers=get_request_headers(), timeout=self.timeout, verify=False)
             # If 3lib is up.
             _3libup = True
 
@@ -48,7 +48,7 @@ class Metadata:
             # If 3lib is down.
             _3libup = False
             try:
-                page = session.get(librocks, headers=get_request_headers(), timeout=self.timeout)
+                page = session.get(librocks, headers=get_request_headers(), timeout=self.timeout, verify=False)
 
             except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
                 raise MetadataError("Both 3lib and LibraryRocks failed to connect. The last error was: ", err)
@@ -108,7 +108,7 @@ class Metadata:
         session = HTMLSession()
         url = self._libgen_fiction_base + md5
         try:
-            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page = session.get(url, headers=get_request_headers(), timeout=self.timeout, verify=False)
             page.raise_for_status()
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
             raise MetadataError("Error while connecting to Libgen: ", err)
@@ -143,7 +143,7 @@ class Metadata:
         session = HTMLSession()
         url = self._libgen_scitech_base + md5
         try:
-            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page = session.get(url, headers=get_request_headers(), timeout=self.timeout, verify=False)
             page.raise_for_status()
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
             raise MetadataError("Error while connecting to Libgen: ", err)
@@ -211,7 +211,7 @@ class Metadata:
         # Ideally, this should only be done once the users actually wants to download a book.
 
         try:
-            page = session.get(url, headers=get_request_headers(), timeout=self.timeout)
+            page = session.get(url, headers=get_request_headers(), timeout=self.timeout, verify=False)
             page.raise_for_status()
         except (exceptions.Timeout, exceptions.ConnectionError, exceptions.HTTPError) as err:
             raise MetadataError("Error while connecting to Librarylol: ", err)
