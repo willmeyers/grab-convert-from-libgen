@@ -26,10 +26,10 @@ class Metadata:
 
         # Common paterns for URLs used here.
         self._liblol_base = "http://library.lol"
-        self._librocks_base = "https://libgen.rocks/ads.php?md5="
-        self._3lib_base = "https://3lib.net/md5/"
-        self._libgen_fiction_base = "https://libgen.is/fiction/"
-        self._libgen_scitech_base = "https://libgen.is/book/index.php?md5="
+        self._librocks_base = "http://libgen.rocks/ads.php?md5="
+        self._3lib_base = "http://3lib.net/md5/"
+        self._libgen_fiction_base = "http://libgen.is/fiction/"
+        self._libgen_scitech_base = "http://libgen.is/book/index.php?md5="
 
     def get_cover(self, md5: str) -> str:
         session = HTMLSession()
